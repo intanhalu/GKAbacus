@@ -86,7 +86,7 @@
           rod.appendChild(slot);
 
           // Active position is just above the bead below, or divider if first
-          let activePos = (idx === 0) ? 110 : earthPositions[idx-1] - 20;
+          let activePos = (idx === 0) ? 110 : earthPositions[idx-1] - 25;
 
           let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos, activePos], [slot]);
           rod.appendChild(earth);
