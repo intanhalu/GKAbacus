@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Soroban Abacus Game</title>
+  <title>Asas Abacus Game</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     .soroban {
@@ -43,7 +43,7 @@
   </style>
 </head>
 <body>
-  <h1>Soroban Abacus (Glowing Slots)</h1>
+  <h1>Asas Abacus</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
@@ -79,17 +79,20 @@
         let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,80], [heavenSlot]);
         rod.appendChild(heaven);
 
-        // Earth slots + beads
-        let earthPositions = [140,170,200,230];
-        earthPositions.forEach(pos=>{
-          let slot = document.createElement('div');
-          slot.className = 'slot';
-          slot.style.top = pos+"px";
-          rod.appendChild(slot);
+        // Earth bead slots + beads
+let earthPositions = [140,170,200,230];
+earthPositions.forEach((pos, idx)=>{
+  let slot = document.createElement('div');
+  slot.className = 'slot';
+  slot.style.top = pos+"px";
+  rod.appendChild(slot);
 
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos,110], [slot]);
-          rod.appendChild(earth);
-        });
+  // Each bead has its own snap points: resting pos + unique active pos
+  let activePos = 110 - (idx * 20); // stack upwards
+  let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos, activePos], [slot]);
+  rod.appendChild(earth);
+});
+
 
         let label = document.createElement('div');
         label.className = 'label';
