@@ -5,67 +5,96 @@
   <title>Abacus Learning Hub</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: #f4f0e6;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f8f6fb;
       margin: 0;
-      padding: 50px;
+      padding: 40px;
+      text-align: center;
     }
-    h1 { color: #333; margin-bottom: 40px; }
-    .menu { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    .btn {
-      display: inline-block;
-      padding: 15px 30px;
-      font-size: 18px;
-      font-weight: bold;
+    h1 {
+      color: #4b0082;
+      margin-bottom: 40px;
+      font-size: 36px;
+    }
+    .menu {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 30px;
+    }
+    .card {
+      background: #6a0dad;
       color: #fff;
-      background: #8b5a2b;
-      border: none;
-      border-radius: 8px;
+      width: 250px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+      transition: transform 0.3s, box-shadow 0.3s;
       cursor: pointer;
-      text-decoration: none;
-      transition: background 0.3s;
     }
-    .btn:hover { background: #a66f3a; }
-    .sub-links { margin-top: 10px; }
+    .card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 10px 18px rgba(0,0,0,0.3);
+    }
+    .card h2 {
+      margin: 0 0 15px;
+      font-size: 22px;
+      color: #fff;
+    }
+    .sub-links {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
     .sub-links a {
-      display: inline-block;
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 14px;
-      color: #333;
-      background: #ddd;
-      border-radius: 6px;
+      background: #d8b4f8;
+      color: #4b0082;
+      padding: 10px;
+      border-radius: 8px;
       text-decoration: none;
+      font-weight: bold;
       transition: background 0.3s;
     }
-    .sub-links a:hover { background: #bbb; }
+    .sub-links a:hover {
+      background: #b57edc;
+      color: #fff;
+    }
+    .single-link {
+      display: inline-block;
+      margin-top: 10px;
+      background: #d8b4f8;
+      color: #4b0082;
+      padding: 12px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      transition: background 0.3s;
+    }
+    .single-link:hover {
+      background: #b57edc;
+      color: #fff;
+    }
   </style>
 </head>
 <body>
   <h1>Abacus Learning Hub</h1>
   <div class="menu">
     <!-- Soroban Abacus -->
-    <a class="btn" href="asasabacus.html">Asas Abascus</a>
+    <div class="card" onclick="location.href='asasabacus.html'">
+      <h2>Asas Abacus</h2>
+      <a class="single-link" href="asasabacus.html">Asas Abacus</a>
+    </div>
 
     <!-- Addition -->
-    <div>
-      <a class="btn" href="#">Addition</a>
-      <div class="sub-links">
-        <a href="addition_asas.html">Asas (1 Digit)</a>
-        <a href="addition_pertengahan.html">Pertengahan (2 Digit)</a>
-        <a href="addition_tinggi.html">Tinggi (3 Digit)</a>
-      </div>
+    <div class="card">
+      <h2>Addition</h2>
+      
     </div>
 
     <!-- Subtraction -->
-    <div>
-      <a class="btn" href="#">Subtraction</a>
-      <div class="sub-links">
-        <a href="subtraction_asas.html">Asas (1 Digit)</a>
-        <a href="subtraction_pertengahan.html">Pertengahan (2 Digit)</a>
-        <a href="subtraction_tinggi.html">Tinggi (3 Digit)</a>
-      </div>
+    <div class="card">
+      <h2>Subtraction</h2>
+      
     </div>
   </div>
 </body>
