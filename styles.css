@@ -1,0 +1,36 @@
+.rod {
+  position: relative;
+  width: 40px;
+  height: 220px; /* enough space for heaven + earth beads */
+  margin: 10px;
+  background: #d2b48c;
+  border-radius: 5px;
+}
+
+.divider {
+  position: absolute;
+  top: 100px; /* place divider at mid-height */
+  width: 100%;
+  height: 6px;
+  background: #000;
+}
+
+.bead {
+  position: absolute;
+  width: 35px;
+  height: 20px;
+  border-radius: 10px;
+  background: #c19a6b;
+  cursor: grab;
+  box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+}
+
+/* Heaven bead starts at top, slides down */
+.bead.heaven { top: 20px; }
+.bead.heaven.active { top: 80px; } /* snaps to divider */
+
+/* Earth beads start below divider, slide up */
+.bead.earth:nth-of-type(3) { top: 130px; }
+.bead.earth:nth-of-type(4) { top: 160px; }
+.bead.earth:nth-of-type(5) { top: 190px; }
+.bead.earth.active { top: 110px; } /* snaps up to divider */
