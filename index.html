@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Soroban Abacus (Stacking Beads)</title>
+  <title>Soroban Abacus (Replacing Slots)</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     .soroban {
@@ -16,16 +16,9 @@
     }
     .divider {
       position: absolute;
-      top: 100px; /* bar set higher */
+      top: 100px;
       width: 100%; height: 6px; background: #000;
     }
-    .slot {
-      position: absolute;
-      width: 100%; height: 24px;
-      border: 1px dashed rgba(0,0,0,0.2);
-      transition: box-shadow 0.2s;
-    }
-    .slot.glow { box-shadow: 0 0 10px 3px yellow; }
     .bead {
       position: absolute;
       width: 40px; height: 22px; border-radius: 11px;
@@ -41,7 +34,7 @@
   </style>
 </head>
 <body>
-  <h1>Soroban Abacus (Stacking Beads)</h1>
+  <h1>Soroban Abacus (Replacing Slots)</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
@@ -69,24 +62,14 @@
         rod.appendChild(divider);
 
         // Heaven bead
-        let heavenSlot = document.createElement('div');
-        heavenSlot.className = 'slot';
-        heavenSlot.style.top = "20px";
-        rod.appendChild(heavenSlot);
-
-        let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,80], [heavenSlot]);
+        let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
         rod.appendChild(heaven);
 
         // Earth beads
         let earthPositions = [140,170,200,230];
         earthPositions.forEach((pos, idx)=>{
-          let slot = document.createElement('div');
-          slot.className = 'slot';
-          slot.style.top = pos+"px";
-          rod.appendChild(slot);
-
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos], [slot]);
-          earth.dataset.index = idx; // track bead order
+          let earth = createBead(pos, 1*Math.pow(10,r), "earth");
+          earth.dataset.index = idx;
           rod.appendChild(earth);
         });
 
@@ -99,14 +82,13 @@
       }
     }
 
-    function createBead(initialTop,value,type,snapPoints,slots){
+    function createBead(initialTop,value,type){
       let bead=document.createElement('div');
       bead.className='bead '+type;
       bead.style.top=initialTop+"px";
       bead.dataset.value=value;
-      bead.dataset.snapPoints=JSON.stringify(snapPoints);
+      bead.dataset.initialTop=initialTop;
       bead.dataset.active="false";
-      bead.slots=slots;
       bead.addEventListener('mousedown',startDrag);
       return bead;
     }
@@ -124,27 +106,26 @@
       function onMouseUp(){
         let nearest;
         if (bead.classList.contains("heaven")) {
-          nearest = (parseInt(bead.style.top) > 50) ? 80 : 20;
+          nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
         } else {
           let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
           let idx = parseInt(bead.dataset.index);
 
           if (idx === 0) {
-            // First earth bead snaps to divider
-            nearest = (parseInt(bead.style.top) < 125) ? 110 : 140;
+            // First earth bead snaps to divider or back down
+            nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
           } else {
-            // Only move up if bead below is active
+            // For other beads: move into the slot of the bead below if it's active
             if (siblings[idx-1].dataset.active === "true") {
-              let belowY = parseInt(siblings[idx-1].style.top);
-              nearest = belowY - 30; // stack just above
+              nearest = parseInt(siblings[idx-1].dataset.initialTop);
             } else {
-              nearest = parseInt(bead.dataset.snapPoints); // stay down
+              nearest = parseInt(bead.dataset.initialTop); // stay down
             }
           }
         }
 
         bead.style.top = nearest + "px";
-        bead.dataset.active = (nearest !== parseInt(bead.dataset.snapPoints)) ? "true" : "false";
+        bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
 
         document.removeEventListener('mousemove',onMouseMove);
         document.removeEventListener('mouseup',onMouseUp);
