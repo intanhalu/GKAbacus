@@ -117,7 +117,7 @@
           } else {
             // For other beads: move into the slot of the bead below if it's active
             if (siblings[idx-1].dataset.active === "true") {
-              nearest = parseInt(siblings[idx-1].dataset.initialTop);
+              nearest = parseInt(siblings[idx-1].dataset.initialTop); // replace slot of bead below
             } else {
               nearest = parseInt(bead.dataset.initialTop); // stay down
             }
