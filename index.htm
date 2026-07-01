@@ -116,41 +116,60 @@
     }
 
     function startDrag(e) {
-      const bead = e.target;
-      bead.style.cursor = "grabbing";
-      const rod = bead.parentElement;
-      const rodRect = rod.getBoundingClientRect();
-      const dividerY = rodRect.top + rodRect.height / 2;
+  const bead = e.target;
+  bead.style.cursor = "grabbing";
+  const rod = bead.parentElement;
+  const rodRect = rod.getBoundingClientRect();
+  const dividerY = rodRect.height / 2;
 
-      function onMouseMove(ev) {
-        let y = ev.clientY - rodRect.top;
-        if (bead.classList.contains("heaven")) {
-          // Heaven bead: can move between initialTop and divider
-          let minY = parseInt(bead.dataset.initialTop);
-          let maxY = rodRect.height / 2 - 20;
-          y = Math.max(minY, Math.min(y, maxY));
-          bead.style.top = y + "px";
-          bead.dataset.active = (y > minY + 10) ? "true" : "false";
-        } else {
-          // Earth bead: can move between divider and bottom
-          let maxY = parseInt(bead.dataset.initialTop);
-          let minY = rodRect.height / 2 + 10;
-          y = Math.max(minY, Math.min(y, maxY));
-          bead.style.top = y + "px";
-          bead.dataset.active = (y < maxY - 10) ? "true" : "false";
-        }
-        updateOutput();
-      }
+  function onMouseMove(ev) {
+    let y = ev.clientY - rodRect.top;
+
+    if (bead.classList.contains("heaven")) {
+      let minY = parseInt(bead.dataset.initialTop);
+      let maxY = dividerY - bead.offsetHeight;
+      y = Math.max(minY, Math.min(y, maxY));
+      bead.style.top = y + "px";
+      bead.dataset.active = (y > minY + 5) ? "true" : "false";
+    } else {
+      let maxY = parseInt(bead.dataset.initialTop);
+      let minY = dividerY + 5;
+      y = Math.max(minY, Math.min(y, maxY));
+      bead.style.top = y + "px";
+      bead.dataset.active = (y < maxY - 5) ? "true" : "false";
+    }
+    updateOutput();
+  }
 
       function onMouseUp() {
-        bead.style.cursor = "grab";
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-      }
+    bead.style.cursor = "grab";
 
-      document.addEventListener('mousemove', onMouseMove);
-      document.addEventListener('mouseup', onMouseUp);
+    // Snap effect
+    if (bead.classList.contains("heaven")) {
+      let minY = parseInt(bead.dataset.initialTop);
+      let maxY = dividerY - bead.offsetHeight;
+      if (bead.dataset.active === "true") {
+        bead.style.top = maxY + "px"; // snap down to divider
+      } else {
+        bead.style.top = minY + "px"; // snap back up
+      }
+    } else {
+      let maxY = parseInt(bead.dataset.initialTop);
+      let minY = dividerY + 5;
+      if (bead.dataset.active === "true") {
+        bead.style.top = minY + "px"; // snap up to divider
+      } else {
+        bead.style.top = maxY + "px"; // snap back down
+      }
     }
+
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    updateOutput();
+  }
+  document.addEventListener('mousemove', onMouseMove);
+  document.addEventListener('mouseup', onMouseUp);
+}
 
     function updateOutput() {
       let total = 0;
