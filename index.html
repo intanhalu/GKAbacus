@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Asas Abacus Game</title>
+  <title>Soroban Abacus (Stacking Beads)</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     .soroban {
@@ -25,9 +25,7 @@
       border: 1px dashed rgba(0,0,0,0.2);
       transition: box-shadow 0.2s;
     }
-    .slot.glow {
-      box-shadow: 0 0 10px 3px yellow;
-    }
+    .slot.glow { box-shadow: 0 0 10px 3px yellow; }
     .bead {
       position: absolute;
       width: 40px; height: 22px; border-radius: 11px;
@@ -43,7 +41,7 @@
   </style>
 </head>
 <body>
-  <h1>Asas Abacus</h1>
+  <h1>Soroban Abacus (Stacking Beads)</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
@@ -70,7 +68,7 @@
         divider.className = 'divider';
         rod.appendChild(divider);
 
-        // Heaven slot + bead
+        // Heaven bead
         let heavenSlot = document.createElement('div');
         heavenSlot.className = 'slot';
         heavenSlot.style.top = "20px";
@@ -79,25 +77,20 @@
         let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,80], [heavenSlot]);
         rod.appendChild(heaven);
 
-        // Earth bead slots + beads
-let earthPositions = [140,170,200,230];
-earthPositions.forEach((pos, idx)=>{
-  let slot = document.createElement('div');
-  slot.className = 'slot';
-  slot.style.top = pos+"px";
-  rod.appendChild(slot);
+        // Earth beads: each has its own resting slot and active slot above the bead below
+        let earthPositions = [140,170,200,230];
+        earthPositions.forEach((pos, idx)=>{
+          let slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.style.top = pos+"px";
+          rod.appendChild(slot);
 
-  // Each bead has two possible positions:
-  // - Resting position (pos)
-  // - Active position (just above the bead below, or divider if first)
-  let activePos = (idx === 0) ? 110 : earthPositions[idx-1] - 20;
+          // Active position is just above the bead below, or divider if first
+          let activePos = (idx === 0) ? 110 : earthPositions[idx-1] - 20;
 
-  let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos, activePos], [slot]);
-  rod.appendChild(earth);
-});
-
-
-
+          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos, activePos], [slot]);
+          rod.appendChild(earth);
+        });
 
         let label = document.createElement('div');
         label.className = 'label';
@@ -144,34 +137,33 @@ earthPositions.forEach((pos, idx)=>{
         });
       }
 
-     function onMouseUp(){
-  let currentY = parseInt(bead.style.top);
-  let snapPoints = JSON.parse(bead.dataset.snapPoints);
+      function onMouseUp(){
+        let currentY=parseInt(bead.style.top);
+        let nearest=snapPoints.reduce((prev,curr)=>
+          Math.abs(curr-currentY)<Math.abs(prev-currentY)?curr:prev
+        );
 
-  // If bead below is not active, force this bead back down
-  if (bead.classList.contains("earth")) {
-    let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
-    let idx = siblings.indexOf(bead);
-    if (idx > 0 && siblings[idx-1].dataset.active === "false") {
-      bead.style.top = snapPoints[0] + "px"; // stay down
-      bead.dataset.active = "false";
-      return;
+        // Earth beads: only move up if the bead below is active
+        if (bead.classList.contains("earth")) {
+          let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
+          let idx = siblings.indexOf(bead);
+          if (idx > 0 && siblings[idx-1].dataset.active === "false") {
+            nearest = snapPoints[0]; // force back down
+          }
+        }
+
+        bead.style.top=nearest+"px";
+        bead.dataset.active=(nearest!==snapPoints[0])?"true":"false";
+
+        bead.slots.forEach(slot=>slot.classList.remove("glow"));
+        document.removeEventListener('mousemove',onMouseMove);
+        document.removeEventListener('mouseup',onMouseUp);
+        updateOutput();
+      }
+
+      document.addEventListener('mousemove',onMouseMove);
+      document.addEventListener('mouseup',onMouseUp);
     }
-  }
-
-  // Otherwise snap to nearest slot
-  let nearest = snapPoints.reduce((prev,curr)=>
-    Math.abs(curr-currentY)<Math.abs(prev-currentY)?curr:prev
-  );
-  bead.style.top = nearest+"px";
-  bead.dataset.active = (nearest!==snapPoints[0])?"true":"false";
-
-  bead.slots.forEach(slot=>slot.classList.remove("glow"));
-  document.removeEventListener('mousemove',onMouseMove);
-  document.removeEventListener('mouseup',onMouseUp);
-  updateOutput();
-}
-
 
     function updateOutput(){
       let total=0;
