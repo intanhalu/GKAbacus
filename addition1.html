@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Soroban Practice</title>
+  <title>Soroban Addition Practice</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     h1 { margin-top: 20px; }
     #question { font-size: 24px; margin: 20px; }
     #digits { font-size: 20px; margin: 10px; color: #4b0082; }
+    #feedback { font-size: 20px; margin: 10px; font-weight: bold; }
     select, button { padding: 10px 20px; margin: 10px; font-size: 16px; }
     .soroban {
       display: flex; justify-content: center; margin: 20px;
@@ -29,7 +30,7 @@
       transition: top 0.15s, box-shadow 0.3s;
     }
     .bead.active {
-      box-shadow: 0 0 10px 4px gold; /* glow effect */
+      box-shadow: 0 0 10px 4px gold;
       background: #deb887;
     }
     .label {
@@ -39,7 +40,7 @@
   </style>
 </head>
 <body>
-  <h1>🧮 Soroban Practice</h1>
+  <h1>🧮 Soroban Addition Practice</h1>
 
   <label for="level">Choose Level:</label>
   <select id="level" onchange="newQuestion()">
@@ -49,9 +50,9 @@
   </select>
 
   <div id="question"></div>
-  <button onclick="checkAnswer()">Check Answer</button>
   <button onclick="newQuestion()">New Question</button>
   <div id="digits"></div>
+  <div id="feedback"></div>
   <br><br>
   <a href="index.html">🏠 Back to Home</a>
 
@@ -119,39 +120,30 @@
       }
 
       function onMouseUp(){
-  let nearest;
-  if (bead.classList.contains("heaven")) {
-    // Heaven bead snaps up or down
-    nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
-  } else {
-    // Earth beads: snap either up or back down
-    let idx = parseInt(bead.dataset.index);
-    if (parseInt(bead.style.top) < parseInt(bead.dataset.initialTop) - 10) {
-      // Snap upward slot
-      nearest = (idx === 0) ? 110 : parseInt(bead.dataset.initialTop) - 30;
-    } else {
-      // Snap back to original slot
-      nearest = parseInt(bead.dataset.initialTop);
-    }
-  }
+        let nearest;
+        if (bead.classList.contains("heaven")) {
+          nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
+        } else {
+          let idx = parseInt(bead.dataset.index);
+          if (bead.dataset.active === "true") {
+            nearest = parseInt(bead.dataset.initialTop); // move back down
+          } else {
+            if (idx === 0) {
+              nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
+            } else {
+              let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
+              if (siblings[idx-1].dataset.active === "true") {
+                nearest = parseInt(siblings[idx-1].dataset.initialTop);
+              } else {
+                nearest = parseInt(bead.dataset.initialTop);
+              }
+            }
+          }
+        }
 
-  bead.style.top = nearest + "px";
-  bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
+        bead.style.top = nearest + "px";
+        bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
 
-  // Glow effect toggle
-  if (bead.dataset.active === "true") {
-    bead.classList.add("active");
-  } else {
-    bead.classList.remove("active");
-  }
-
-  document.removeEventListener('mousemove',onMouseMove);
-  document.removeEventListener('mouseup',onMouseUp);
-
-  updateDigits();
-}
-
-        // Glow effect toggle
         if (bead.dataset.active === "true") {
           bead.classList.add("active");
         } else {
@@ -162,6 +154,7 @@
         document.removeEventListener('mouseup',onMouseUp);
 
         updateDigits();
+        autoCheckAnswer();
       }
 
       document.addEventListener('mousemove',onMouseMove);
@@ -183,6 +176,17 @@
     function updateDigits(){
       let total = getSorobanValue();
       document.getElementById('digits').textContent = "Digits: " + total;
+    }
+
+    function autoCheckAnswer(){
+      let sorobanValue = getSorobanValue();
+      if (sorobanValue === currentAnswer) {
+        document.getElementById('feedback').textContent = "✅ Correct! 🎉 Well done!";
+        document.getElementById('feedback').style.color = "green";
+      } else {
+        document.getElementById('feedback').textContent = "❌ Wrong. Try again!";
+        document.getElementById('feedback').style.color = "red";
+      }
     }
 
     function newQuestion() {
@@ -210,15 +214,7 @@
         b.classList.remove("active");
       });
       updateDigits();
-    }
-
-    function checkAnswer() {
-      let sorobanValue = getSorobanValue();
-      if (sorobanValue === currentAnswer) {
-        alert("✅ Correct! 🎉 Well done!");
-      } else {
-        alert("❌ Incorrect. The correct answer is " + currentAnswer);
-      }
+      document.getElementById('feedback').textContent = "";
     }
 
     // First question on load
