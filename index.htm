@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Abacus Game</title>
+  <title>Soroban Abacus Game</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     .soroban {
@@ -16,15 +16,20 @@
     }
     .divider {
       position: absolute;
-      top: 120px; /* divider at mid-height */
+      top: 120px; /* middle of rod */
       width: 100%; height: 6px; background: #000;
+    }
+    .slot {
+      position: absolute;
+      width: 100%; height: 24px;
+      border: 1px dashed rgba(0,0,0,0.2);
     }
     .bead {
       position: absolute;
       width: 40px; height: 22px; border-radius: 11px;
       background: #c19a6b; cursor: grab;
       box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-      transition: top 0.2s;
+      transition: top 0.15s;
     }
     .label {
       position: absolute; bottom: -25px; width: 100%; text-align: center;
@@ -34,7 +39,7 @@
   </style>
 </head>
 <body>
-  <h1>Soroban Abacus (Drag Beads)</h1>
+  <h1>Soroban Abacus (Drag Beads with Slots)</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
@@ -61,14 +66,24 @@
         divider.className = 'divider';
         rod.appendChild(divider);
 
+        // Heaven bead slot
+        let heavenSlot = document.createElement('div');
+        heavenSlot.className = 'slot';
+        heavenSlot.style.top = "20px";
+        rod.appendChild(heavenSlot);
+
         // Heaven bead
-        let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
+        let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,100]);
         rod.appendChild(heaven);
 
-        // Earth beads
-        let positions = [140,170,200,230];
-        positions.forEach(pos=>{
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth");
+        // Earth bead slots
+        [140,170,200,230].forEach(pos=>{
+          let slot = document.createElement('div');
+          slot.className = 'slot';
+          slot.style.top = pos+"px";
+          rod.appendChild(slot);
+
+          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos,130]);
           rod.appendChild(earth);
         });
 
@@ -81,12 +96,12 @@
       }
     }
 
-    function createBead(initialTop,value,type){
+    function createBead(initialTop,value,type,snapPoints){
       let bead=document.createElement('div');
       bead.className='bead '+type;
       bead.style.top=initialTop+"px";
       bead.dataset.value=value;
-      bead.dataset.initialTop=initialTop;
+      bead.dataset.snapPoints=JSON.stringify(snapPoints);
       bead.dataset.active="false";
       bead.addEventListener('mousedown',startDrag);
       return bead;
@@ -96,36 +111,22 @@
       const bead=e.target;
       const rod=bead.parentElement;
       const rodRect=rod.getBoundingClientRect();
-      const dividerY=120; // matches CSS divider top
+      const snapPoints=JSON.parse(bead.dataset.snapPoints);
 
       function onMouseMove(ev){
         let y=ev.clientY-rodRect.top;
-        if(bead.classList.contains("heaven")){
-          let minY=parseInt(bead.dataset.initialTop);
-          let maxY=dividerY-20;
-          y=Math.max(minY,Math.min(y,maxY));
-          bead.style.top=y+"px";
-          bead.dataset.active=(y>=maxY-2)?"true":"false";
-        } else {
-          let maxY=parseInt(bead.dataset.initialTop);
-          let minY=dividerY+5;
-          y=Math.max(minY,Math.min(y,maxY));
-          bead.style.top=y+"px";
-          bead.dataset.active=(y<=minY+2)?"true":"false";
-        }
-        updateOutput();
+        bead.style.top=y+"px";
       }
 
       function onMouseUp(){
-        if(bead.classList.contains("heaven")){
-          let minY=parseInt(bead.dataset.initialTop);
-          let maxY=dividerY-20;
-          bead.style.top=(bead.dataset.active==="true"?maxY:minY)+"px";
-        } else {
-          let maxY=parseInt(bead.dataset.initialTop);
-          let minY=dividerY+5;
-          bead.style.top=(bead.dataset.active==="true"?minY:maxY)+"px";
-        }
+        // Snap to nearest slot
+        let currentY=parseInt(bead.style.top);
+        let nearest=snapPoints.reduce((prev,curr)=>
+          Math.abs(curr-currentY)<Math.abs(prev-currentY)?curr:prev
+        );
+        bead.style.top=nearest+"px";
+        bead.dataset.active=(nearest!==snapPoints[0])?"true":"false";
+
         document.removeEventListener('mousemove',onMouseMove);
         document.removeEventListener('mouseup',onMouseUp);
         updateOutput();
