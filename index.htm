@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Abacus Learning Game</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; }
+    .hidden { display: none; }
+    .abacus { display: flex; justify-content: center; margin: 20px; }
+    .rod { margin: 5px; }
+    .bead {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: #ff6666; margin: 5px; cursor: pointer;
+    }
+    .bead.active { background: #66cc66; }
+    button { margin: 5px; padding: 10px; }
+    #output { margin-top: 20px; font-size: 18px; }
+    #question { font-size: 20px; margin-top: 15px; }
+    #score { font-size: 18px; margin-top: 10px; }
+    #leaderboard { margin-top: 20px; }
+    table { margin: auto; border-collapse: collapse; }
+    th, td { border: 1px solid #333; padding: 8px; }
+  </style>
+</head>
+<body>
+  <!-- Login Page -->
+  <div id="loginPage">
+    <h1>Welcome to Abacus Learning!</h1>
+    <p>Enter your name to begin:</p>
+    <input type="text" id="username" placeholder="Your Name">
+    <button onclick="login()">Start</button>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="hidden">
+    <h1>Hello, <span id="playerName"></span>!</h1>
+    <p>Select a mode:</p>
+    <button onclick="startGame('learn')">Learn Beads</button>
+    <button onclick="startGame('add')">Addition</button>
+    <button onclick="startGame('sub')">Subtraction</button>
+    <button onclick="startGame('practice')">Practice</button>
+    <button onclick="showLeaderboard()">View Leaderboard</button>
+  </div>
+
+  <!-- Game Page -->
+  <div id="gamePage" class="hidden">
+    <h2 id="modeTitle"></h2>
+    <div class="abacus" id="abacus"></div>
+    <div id="question"></div>
+    <div id="output"></div>
+    <div id="score"></div>
+    <button onclick="endGame()">End Game & Save Score</button>
+    <button onclick="backToDashboard()">Back to Dashboard</button>
+  </div>
+
+  <!-- Leaderboard Page -->
+  <div id="leaderboardPage" class="hidden">
+    <h2>Leaderboard</h2>
+    <div id="leaderboard"></div>
+    <button onclick="playAgain()">Play Again</button>
+    <button onclick="backToDashboard()">Back to Dashboard</button>
+  </div>
+
+  <script>
+    const abacus = document.getElementById('abacus');
+    const output = document.getElementById('output');
+    const question = document.getElementById('question');
+    const scoreDisplay = document.getElementById('score');
+    let mode = 'learn';
+    let rods = 5, beadsPerRod = 10;
+    let score = 0;
+    let currentAnswer = 0;
+    let playerName = "";
+    let leaderboard = [];
+
+    function login() {
+      const name = document.getElementById('username').value.trim();
+      if (name) {
+        playerName = name;
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('dashboard').classList.remove('hidden');
+        document.getElementById('playerName').textContent = name;
+      }
+    }
+
+    function startGame(m) {
+      mode = m;
+      score = 0;
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('gamePage').classList.remove('hidden');
+      document.getElementById('modeTitle').textContent = "Mode: " + m.toUpperCase();
+      buildAbacus();
+      if (mode === 'add' || mode === 'sub') {
+        generateQuestion();
+      } else {
+        question.textContent = "";
+      }
+      updateOutput();
+    }
+
+    function backToDashboard() {
+      document.getElementById('gamePage').classList.add('hidden');
+      document.getElementById('leaderboardPage').classList.add('hidden');
+      document.getElementById('dashboard').classList.remove('hidden');
+    }
+
+    function buildAbacus() {
+      abacus.innerHTML = "";
+      for (let r = 0; r < rods; r++) {
+        let rod = document.createElement('div');
+        rod.className = 'rod';
+        for (let b = 0; b < beadsPerRod; b++) {
+          let bead = document.createElement('div');
+          bead.className = 'bead';
+          bead.addEventListener('click', () => toggleBead(bead));
+          rod.appendChild(bead);
+        }
+        abacus.appendChild(rod);
+      }
+    }
+
+    function toggleBead(bead) {
+      bead.classList.toggle('active');
+      updateOutput();
+    }
+
+    function updateOutput() {
+      let count = document.querySelectorAll('.bead.active').length;
+      if (mode === 'learn') {
+        output.textContent = `You selected ${count} beads.`;
+      } else if (mode === 'practice') {
+        output.textContent = `Practice mode: Count the beads (${count}).`;
+      } else if (mode === 'add' || mode === 'sub') {
+        output.textContent = `You selected ${count} beads.`;
+        if (count === currentAnswer) {
+          score++;
+          scoreDisplay.textContent = `Score: ${score}`;
+          alert("Correct! 🎉");
+          generateQuestion();
+          resetBeads();
+        }
+      }
+    }
+
+    function resetBeads() {
+      document.querySelectorAll('.bead').forEach(b => b.classList.remove('active'));
+    }
+
+    function generateQuestion() {
+      let a = Math.floor(Math.random() * 5) + 1;
+      let b = Math.floor(Math.random() * 5) + 1;
+      if (mode === 'add') {
+        currentAnswer = a + b;
+        question.textContent = `Solve: ${a} + ${b}`;
+      } else if (mode === 'sub') {
+        currentAnswer = a - b;
+        if (currentAnswer < 0) currentAnswer = 0;
+        question.textContent = `Solve: ${a} - ${b}`;
+      }
+    }
+
+    function endGame() {
+      leaderboard.push({ name: playerName, score: score, mode: mode });
+      alert(`${playerName}, your score of ${score} has been saved!`);
+      backToDashboard();
+    }
+
+    function showLeaderboard() {
+      document.getElementById('dashboard').classList.add('hidden');
+      document.getElementById('leaderboardPage').classList.remove('hidden');
+      
+      // Sort by score descending
+      leaderboard.sort((a, b) => b.score - a.score);
+      
+      let html = "<table><tr><th>Rank</th><th>Name</th><th>Mode</th><th>Score</th></tr>";
+      leaderboard.forEach((entry, index) => {
+        html += `<tr><td>${index+1}</td><td>${entry.name}</td><td>${entry.mode}</td><td>${entry.score}</td></tr>`;
+      });
+      html += "</table>";
+      document.getElementById('leaderboard').innerHTML = html;
+    }
+
+    function playAgain() {
+      document.getElementById('leaderboardPage').classList.add('hidden');
+      startGame(mode); // restart last mode
+    }
+  </script>
+</body>
+</html>
