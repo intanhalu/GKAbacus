@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Addition Practice with Soroban</title>
+  <title>Soroban Practice</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     h1 { margin-top: 20px; }
     #question { font-size: 24px; margin: 20px; }
+    #digits { font-size: 20px; margin: 10px; color: #4b0082; }
     select, button { padding: 10px 20px; margin: 10px; font-size: 16px; }
     .soroban {
       display: flex; justify-content: center; margin: 20px;
@@ -25,7 +26,11 @@
       width: 40px; height: 22px; border-radius: 11px;
       background: #c19a6b; cursor: grab;
       box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-      transition: top 0.15s;
+      transition: top 0.15s, box-shadow 0.3s;
+    }
+    .bead.active {
+      box-shadow: 0 0 10px 4px gold; /* glow effect */
+      background: #deb887;
     }
     .label {
       position: absolute; bottom: -25px; width: 100%; text-align: center;
@@ -34,7 +39,7 @@
   </style>
 </head>
 <body>
-  <h1>➕ Addition Practice with Soroban</h1>
+  <h1>🧮 Soroban Practice</h1>
 
   <label for="level">Choose Level:</label>
   <select id="level" onchange="newQuestion()">
@@ -46,6 +51,7 @@
   <div id="question"></div>
   <button onclick="checkAnswer()">Check Answer</button>
   <button onclick="newQuestion()">New Question</button>
+  <div id="digits"></div>
   <br><br>
   <a href="index.html">🏠 Back to Home</a>
 
@@ -134,8 +140,17 @@
         bead.style.top = nearest + "px";
         bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
 
+        // Glow effect toggle
+        if (bead.dataset.active === "true") {
+          bead.classList.add("active");
+        } else {
+          bead.classList.remove("active");
+        }
+
         document.removeEventListener('mousemove',onMouseMove);
         document.removeEventListener('mouseup',onMouseUp);
+
+        updateDigits();
       }
 
       document.addEventListener('mousemove',onMouseMove);
@@ -152,6 +167,11 @@
         });
       });
       return total;
+    }
+
+    function updateDigits(){
+      let total = getSorobanValue();
+      document.getElementById('digits').textContent = "Digits: " + total;
     }
 
     function newQuestion() {
@@ -176,7 +196,9 @@
       document.querySelectorAll('.bead').forEach(b=>{
         b.dataset.active="false";
         b.style.top=b.dataset.initialTop+"px";
+        b.classList.remove("active");
       });
+      updateDigits();
     }
 
     function checkAnswer() {
