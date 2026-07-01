@@ -105,9 +105,10 @@
       const bead=e.target;
       const rod=bead.parentElement;
       const rodRect=rod.getBoundingClientRect();
+      let offsetY = e.clientY - rodRect.top - parseInt(bead.style.top);
 
       function onMouseMove(ev){
-        let y=ev.clientY-rodRect.top;
+        let y=ev.clientY-rodRect.top-offsetY;
         bead.style.top=y+"px";
       }
 
