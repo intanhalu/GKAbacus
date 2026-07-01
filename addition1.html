@@ -119,26 +119,37 @@
       }
 
       function onMouseUp(){
-        let nearest;
-        if (bead.classList.contains("heaven")) {
-          nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
-        } else {
-          let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
-          let idx = parseInt(bead.dataset.index);
+  let nearest;
+  if (bead.classList.contains("heaven")) {
+    // Heaven bead snaps up or down
+    nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
+  } else {
+    // Earth beads: snap either up or back down
+    let idx = parseInt(bead.dataset.index);
+    if (parseInt(bead.style.top) < parseInt(bead.dataset.initialTop) - 10) {
+      // Snap upward slot
+      nearest = (idx === 0) ? 110 : parseInt(bead.dataset.initialTop) - 30;
+    } else {
+      // Snap back to original slot
+      nearest = parseInt(bead.dataset.initialTop);
+    }
+  }
 
-          if (idx === 0) {
-            nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
-          } else {
-            if (siblings[idx-1].dataset.active === "true") {
-              nearest = parseInt(siblings[idx-1].dataset.initialTop);
-            } else {
-              nearest = parseInt(bead.dataset.initialTop);
-            }
-          }
-        }
+  bead.style.top = nearest + "px";
+  bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
 
-        bead.style.top = nearest + "px";
-        bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
+  // Glow effect toggle
+  if (bead.dataset.active === "true") {
+    bead.classList.add("active");
+  } else {
+    bead.classList.remove("active");
+  }
+
+  document.removeEventListener('mousemove',onMouseMove);
+  document.removeEventListener('mouseup',onMouseUp);
+
+  updateDigits();
+}
 
         // Glow effect toggle
         if (bead.dataset.active === "true") {
