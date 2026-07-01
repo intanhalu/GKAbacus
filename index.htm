@@ -2,206 +2,200 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Abacus Learning Game</title>
+  <title>Abacus Game</title>
   <style>
-    body { font-family: Arial, sans-serif; text-align: center; }
-    .hidden { display: none; }
-    .soroban { display: flex; justify-content: center; margin: 20px; }
-    .rod { display: flex; flex-direction: column; align-items: center; margin: 5px; }
-    .divider { width: 40px; height: 5px; background: black; margin: 5px 0; }
-    .bead {
-      width: 30px; height: 30px; border-radius: 50%;
-      background: #ff6666; margin: 5px; cursor: pointer;
+    body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
+    .soroban {
+      display: flex; justify-content: center; margin: 20px;
+      background: #8b5a2b; padding: 20px; border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
     }
-    .bead.active { background: #66cc66; }
+    .rod {
+      display: flex; flex-direction: column; align-items: center;
+      margin: 5px; background: #d2b48c; padding: 5px; border-radius: 5px;
+      transition: box-shadow 0.3s, transform 0.3s;
+    }
+    .rod.activeRod {
+      box-shadow: 0 0 10px 3px yellow;
+      transform: scale(1.05);
+    }
+    .divider {
+      width: 40px; height: 6px; background: #000; margin: 5px 0;
+    }
+    .bead {
+      width: 35px; height: 20px; border-radius: 10px;
+      background: #c19a6b; margin: 4px; cursor: pointer;
+      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+      transition: transform 0.2s;
+    }
+    .bead.active { background: #deb887; transform: translateY(5px); }
+    .label {
+      margin-top: 5px; font-weight: bold; color: #fff;
+    }
+    .rodTotal {
+      margin-top: 3px; font-size: 14px; color: #000;
+    }
     button { margin: 5px; padding: 10px; }
     #output { margin-top: 20px; font-size: 18px; }
     #question { font-size: 20px; margin-top: 15px; }
     #score { font-size: 18px; margin-top: 10px; }
-    #leaderboard { margin-top: 20px; }
-    table { margin: auto; border-collapse: collapse; }
-    th, td { border: 1px solid #333; padding: 8px; }
+    #breakdown { margin-top: 20px; font-size: 16px; background: #fff; padding: 10px; border-radius: 8px; display: inline-block; text-align: left; }
+    #digits { margin-top: 10px; font-size: 20px; font-weight: bold; color: #333; }
+    .controls { margin: 20px; }
   </style>
 </head>
 <body>
-  <!-- Login Page -->
-  <div id="loginPage">
-    <h1>Welcome to Soroban Learning!</h1>
-    <p>Enter your name to begin:</p>
-    <input type="text" id="username" placeholder="Your Name">
-    <button onclick="login()">Start</button>
+  <h1>Japanese Soroban Abacus Game</h1>
+
+  <!-- Mode Switcher -->
+  <div class="controls">
+    <button onclick="setMode('learn')">Learn Beads</button>
+    <button onclick="setMode('add')">Addition</button>
+    <button onclick="setMode('sub')">Subtraction</button>
+    <button onclick="setMode('practice')">Practice</button>
   </div>
 
-  <!-- Dashboard -->
-  <div id="dashboard" class="hidden">
-    <h1>Hello, <span id="playerName"></span>!</h1>
-    <p>Select a mode:</p>
-    <button onclick="startGame('learn')">Learn Beads</button>
-    <button onclick="startGame('add')">Addition</button>
-    <button onclick="startGame('sub')">Subtraction</button>
-    <button onclick="startGame('practice')">Practice</button>
-    <button onclick="showLeaderboard()">View Leaderboard</button>
-  </div>
-
-  <!-- Game Page -->
-  <div id="gamePage" class="hidden">
-    <h2 id="modeTitle"></h2>
-    <div class="soroban" id="soroban"></div>
-    <div id="question"></div>
-    <div id="output"></div>
-    <div id="score"></div>
-    <button onclick="endGame()">End Game & Save Score</button>
-    <button onclick="backToDashboard()">Back to Dashboard</button>
-  </div>
-
-  <!-- Leaderboard Page -->
-  <div id="leaderboardPage" class="hidden">
-    <h2>Leaderboard</h2>
-    <div id="leaderboard"></div>
-    <button onclick="playAgain()">Play Again</button>
-    <button onclick="backToDashboard()">Back to Dashboard</button>
-  </div>
+  <div class="soroban" id="soroban"></div>
+  <div id="question"></div>
+  <div id="output"></div>
+  <div id="score"></div>
+  <div id="breakdown"></div>
+  <div id="digits"></div>
+  <button onclick="generateQuestion()">New Question</button>
 
   <script>
     const soroban = document.getElementById('soroban');
     const output = document.getElementById('output');
     const question = document.getElementById('question');
     const scoreDisplay = document.getElementById('score');
-    let mode = 'learn';
-    let rods = 5; // 5 rods for digits
+    const breakdown = document.getElementById('breakdown');
+    const digitsDisplay = document.getElementById('digits');
+    let rods = 5;
     let score = 0;
     let currentAnswer = 0;
-    let playerName = "";
-    let leaderboard = [];
+    let mode = 'learn';
 
-    function login() {
-      const name = document.getElementById('username').value.trim();
-      if (name) {
-        playerName = name;
-        document.getElementById('loginPage').classList.add('hidden');
-        document.getElementById('dashboard').classList.remove('hidden');
-        document.getElementById('playerName').textContent = name;
-      }
-    }
+    const labels = ["Ones", "Tens", "Hundreds", "Thousands", "Ten-Thousands"];
 
-    function startGame(m) {
-      mode = m;
-      score = 0;
-      document.getElementById('dashboard').classList.add('hidden');
-      document.getElementById('gamePage').classList.remove('hidden');
-      document.getElementById('modeTitle').textContent = "Mode: " + m.toUpperCase();
-      buildSoroban();
-      if (mode === 'add' || mode === 'sub') {
-        generateQuestion();
-      } else {
-        question.textContent = "";
-      }
-      updateOutput();
-    }
-
-    function backToDashboard() {
-      document.getElementById('gamePage').classList.add('hidden');
-      document.getElementById('leaderboardPage').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-    }
+    buildSoroban();
 
     function buildSoroban() {
       soroban.innerHTML = "";
       for (let r = 0; r < rods; r++) {
         let rod = document.createElement('div');
         rod.className = 'rod';
-        
-        // Heaven bead (worth 5)
+        rod.dataset.place = r;
+
         let heaven = document.createElement('div');
         heaven.className = 'bead heaven';
-        heaven.dataset.value = 5;
-        heaven.addEventListener('click', () => toggleBead(heaven));
+        heaven.dataset.value = 5 * Math.pow(10, r);
+        heaven.addEventListener('click', () => toggleBead(heaven, rod));
         rod.appendChild(heaven);
 
-        // Divider
         let divider = document.createElement('div');
         divider.className = 'divider';
         rod.appendChild(divider);
 
-        // Earth beads (worth 1 each)
         for (let b = 0; b < 4; b++) {
           let earth = document.createElement('div');
           earth.className = 'bead earth';
-          earth.dataset.value = 1;
-          earth.addEventListener('click', () => toggleBead(earth));
+          earth.dataset.value = 1 * Math.pow(10, r);
+          earth.addEventListener('click', () => toggleBead(earth, rod));
           rod.appendChild(earth);
         }
+
+        let label = document.createElement('div');
+        label.className = 'label';
+        label.textContent = labels[r];
+        rod.appendChild(label);
+
+        let rodTotal = document.createElement('div');
+        rodTotal.className = 'rodTotal';
+        rodTotal.textContent = "Value: 0";
+        rod.appendChild(rodTotal);
 
         soroban.appendChild(rod);
       }
     }
 
-    function toggleBead(bead) {
+    function toggleBead(bead, rod) {
       bead.classList.toggle('active');
+      highlightRod(rod);
       updateOutput();
+    }
+
+    function highlightRod(rod) {
+      document.querySelectorAll('.rod').forEach(r => r.classList.remove('activeRod'));
+      rod.classList.add('activeRod');
     }
 
     function updateOutput() {
       let total = 0;
-      document.querySelectorAll('.bead.active').forEach(b => {
-        total += parseInt(b.dataset.value);
-      });
-      if (mode === 'learn') {
-        output.textContent = `You selected value: ${total}`;
-      } else if (mode === 'practice') {
-        output.textContent = `Practice mode: Current value = ${total}`;
-      } else if (mode === 'add' || mode === 'sub') {
-        output.textContent = `Current value = ${total}`;
-        if (total === currentAnswer) {
-          score++;
-          scoreDisplay.textContent = `Score: ${score}`;
-          alert("Correct! 🎉");
-          generateQuestion();
-          resetBeads();
+      let breakdownText = "<strong>Number Breakdown:</strong><br>";
+      let digitArray = new Array(rods).fill(0);
+
+      document.querySelectorAll('.rod').forEach((rod, index) => {
+        let rodValue = 0;
+        rod.querySelectorAll('.bead.active').forEach(b => {
+          rodValue += parseInt(b.dataset.value);
+        });
+        rod.querySelector('.rodTotal').textContent = "Value: " + rodValue;
+        total += rodValue;
+        if (rodValue > 0) {
+          breakdownText += `${labels[index]}: ${rodValue}<br>`;
         }
+        digitArray[index] = rodValue / Math.pow(10, index);
+      });
+
+      breakdown.innerHTML = breakdownText + `<br><strong>Total: ${total}</strong>`;
+      output.textContent = `Current total value = ${total}`;
+      digitsDisplay.textContent = `Digits: ${digitArray.reverse().join('')}`;
+
+      if ((mode === 'add' || mode === 'sub') && total === currentAnswer && currentAnswer !== 0) {
+        score++;
+        scoreDisplay.textContent = `Score: ${score}`;
+        alert("Correct! 🎉");
+        generateQuestion();
+        resetBeads();
       }
     }
 
     function resetBeads() {
       document.querySelectorAll('.bead').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.rodTotal').forEach(rt => rt.textContent = "Value: 0");
+      document.querySelectorAll('.rod').forEach(r => r.classList.remove('activeRod'));
+      breakdown.innerHTML = "";
+      digitsDisplay.textContent = "";
     }
 
     function generateQuestion() {
-      let a = Math.floor(Math.random() * 9) + 1;
-      let b = Math.floor(Math.random() * 9) + 1;
-      if (mode === 'add') {
-        currentAnswer = a + b;
-        question.textContent = `Solve: ${a} + ${b}`;
-      } else if (mode === 'sub') {
-        currentAnswer = a - b;
-        if (currentAnswer < 0) currentAnswer = 0;
-        question.textContent = `Solve: ${a} - ${b}`;
+      if (mode === 'add' || mode === 'sub') {
+        let a = Math.floor(Math.random() * 50) + 1;
+        let b = Math.floor(Math.random() * 50) + 1;
+        if (mode === 'add') {
+          currentAnswer = a + b;
+          question.textContent = `Solve: ${a} + ${b}`;
+        } else {
+          currentAnswer = a - b;
+          if (currentAnswer < 0) currentAnswer = 0;
+          question.textContent = `Solve: ${a} - ${b}`;
+        }
+      } else {
+        question.textContent = "";
+        currentAnswer = 0;
       }
     }
 
-    function endGame() {
-      leaderboard.push({ name: playerName, score: score, mode: mode });
-      alert(`${playerName}, your score of ${score} has been saved!`);
-      backToDashboard();
-    }
-
-    function showLeaderboard() {
-      document.getElementById('dashboard').classList.add('hidden');
-      document.getElementById('leaderboardPage').classList.remove('hidden');
-      
-      leaderboard.sort((a, b) => b.score - a.score);
-      
-      let html = "<table><tr><th>Rank</th><th>Name</th><th>Mode</th><th>Score</th></tr>";
-      leaderboard.forEach((entry, index) => {
-        html += `<tr><td>${index+1}</td><td>${entry.name}</td><td>${entry.mode}</td><td>${entry.score}</td></tr>`;
-      });
-      html += "</table>";
-      document.getElementById('leaderboard').innerHTML = html;
-    }
-
-    function playAgain() {
-      document.getElementById('leaderboardPage').classList.add('hidden');
-      startGame(mode);
+    function setMode(m) {
+      mode = m;
+      score = 0;
+      scoreDisplay.textContent = "";
+      resetBeads();
+      question.textContent = "";
+      output.textContent = `Mode: ${m.toUpperCase()}`;
+      if (mode === 'add' || mode === 'sub') {
+        generateQuestion();
+      }
     }
   </script>
 </body>
