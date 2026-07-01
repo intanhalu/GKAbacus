@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Soroban Abacus Game</title>
+  <title>Abacus Game</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     .soroban {
@@ -11,69 +11,48 @@
     }
     .rod {
       position: relative;
-      width: 40px; height: 220px;
+      width: 50px; height: 240px;
       margin: 10px; background: #d2b48c; border-radius: 5px;
     }
     .divider {
-      position: absolute; top: 50%; width: 100%; height: 6px; background: #000;
+      position: absolute;
+      top: 120px; /* divider at mid-height */
+      width: 100%; height: 6px; background: #000;
     }
     .bead {
       position: absolute;
-      width: 35px; height: 20px; border-radius: 10px;
+      width: 40px; height: 22px; border-radius: 11px;
       background: #c19a6b; cursor: grab;
       box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
+      transition: top 0.2s;
     }
     .label {
       position: absolute; bottom: -25px; width: 100%; text-align: center;
       font-weight: bold; color: #fff;
     }
-    button { margin: 5px; padding: 10px; }
-    #output { margin-top: 20px; font-size: 18px; }
-    #question { font-size: 20px; margin-top: 15px; }
-    #score { font-size: 18px; margin-top: 10px; }
-    #breakdown { margin-top: 20px; font-size: 16px; background: #fff; padding: 10px; border-radius: 8px; display: inline-block; text-align: left; }
-    #digits { margin-top: 10px; font-size: 20px; font-weight: bold; color: #333; }
-    .controls { margin: 20px; }
+    #output, #breakdown, #digits { margin-top: 15px; }
   </style>
 </head>
 <body>
-  <h1>Japanese Soroban Abacus Game</h1>
-
-  <!-- Mode Switcher -->
-  <div class="controls">
-    <button onclick="setMode('learn')">Learn Beads</button>
-    <button onclick="setMode('add')">Addition</button>
-    <button onclick="setMode('sub')">Subtraction</button>
-    <button onclick="setMode('practice')">Practice</button>
-  </div>
-
+  <h1>Soroban Abacus (Drag Beads)</h1>
   <div class="soroban" id="soroban"></div>
-  <div id="question"></div>
   <div id="output"></div>
-  <div id="score"></div>
   <div id="breakdown"></div>
   <div id="digits"></div>
-  <button onclick="generateQuestion()">New Question</button>
 
   <script>
     const soroban = document.getElementById('soroban');
     const output = document.getElementById('output');
-    const question = document.getElementById('question');
-    const scoreDisplay = document.getElementById('score');
     const breakdown = document.getElementById('breakdown');
     const digitsDisplay = document.getElementById('digits');
     let rods = 5;
-    let score = 0;
-    let currentAnswer = 0;
-    let mode = 'learn';
-
-    const labels = ["Ten-Thousands", "Thousands", "Hundreds", "Tens", "Ones"];
+    const labels = ["Ten-Thousands","Thousands","Hundreds","Tens","Ones"];
 
     buildSoroban();
 
     function buildSoroban() {
       soroban.innerHTML = "";
-      for (let r = rods - 1; r >= 0; r--) {
+      for (let r = rods-1; r>=0; r--) {
         let rod = document.createElement('div');
         rod.className = 'rod';
         rod.dataset.place = r;
@@ -83,164 +62,102 @@
         rod.appendChild(divider);
 
         // Heaven bead
-        let heaven = createBead(20, 5 * Math.pow(10, r), "heaven");
+        let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
         rod.appendChild(heaven);
 
         // Earth beads
-        let positions = [120, 150, 180, 210];
-        positions.forEach(pos => {
-          let earth = createBead(pos, 1 * Math.pow(10, r), "earth");
+        let positions = [140,170,200,230];
+        positions.forEach(pos=>{
+          let earth = createBead(pos, 1*Math.pow(10,r), "earth");
           rod.appendChild(earth);
         });
 
-        // Label
         let label = document.createElement('div');
         label.className = 'label';
-        label.textContent = labels[rods - 1 - r];
+        label.textContent = labels[rods-1-r];
         rod.appendChild(label);
 
         soroban.appendChild(rod);
       }
     }
 
-    function createBead(initialTop, value, type) {
-      let bead = document.createElement('div');
-      bead.className = 'bead ' + type;
-      bead.style.top = initialTop + "px";
-      bead.dataset.value = value;
-      bead.dataset.initialTop = initialTop;
-      bead.dataset.active = "false";
-
-      bead.addEventListener('mousedown', startDrag);
+    function createBead(initialTop,value,type){
+      let bead=document.createElement('div');
+      bead.className='bead '+type;
+      bead.style.top=initialTop+"px";
+      bead.dataset.value=value;
+      bead.dataset.initialTop=initialTop;
+      bead.dataset.active="false";
+      bead.addEventListener('mousedown',startDrag);
       return bead;
     }
 
-    function startDrag(e) {
-  const bead = e.target;
-  bead.style.cursor = "grabbing";
-  const rod = bead.parentElement;
-  const rodRect = rod.getBoundingClientRect();
-  const dividerY = rodRect.height / 2;
+    function startDrag(e){
+      const bead=e.target;
+      const rod=bead.parentElement;
+      const rodRect=rod.getBoundingClientRect();
+      const dividerY=120; // matches CSS divider top
 
-  function onMouseMove(ev) {
-    let y = ev.clientY - rodRect.top;
-
-    if (bead.classList.contains("heaven")) {
-      let minY = parseInt(bead.dataset.initialTop);
-      let maxY = dividerY - bead.offsetHeight;
-      y = Math.max(minY, Math.min(y, maxY));
-      bead.style.top = y + "px";
-      bead.dataset.active = (y > minY + 5) ? "true" : "false";
-    } else {
-      let maxY = parseInt(bead.dataset.initialTop);
-      let minY = dividerY + 5;
-      y = Math.max(minY, Math.min(y, maxY));
-      bead.style.top = y + "px";
-      bead.dataset.active = (y < maxY - 5) ? "true" : "false";
-    }
-    updateOutput();
-  }
-
-      function onMouseUp() {
-    bead.style.cursor = "grab";
-
-    // Snap effect
-    if (bead.classList.contains("heaven")) {
-      let minY = parseInt(bead.dataset.initialTop);
-      let maxY = dividerY - bead.offsetHeight;
-      if (bead.dataset.active === "true") {
-        bead.style.top = maxY + "px"; // snap down to divider
-      } else {
-        bead.style.top = minY + "px"; // snap back up
+      function onMouseMove(ev){
+        let y=ev.clientY-rodRect.top;
+        if(bead.classList.contains("heaven")){
+          let minY=parseInt(bead.dataset.initialTop);
+          let maxY=dividerY-20;
+          y=Math.max(minY,Math.min(y,maxY));
+          bead.style.top=y+"px";
+          bead.dataset.active=(y>=maxY-2)?"true":"false";
+        } else {
+          let maxY=parseInt(bead.dataset.initialTop);
+          let minY=dividerY+5;
+          y=Math.max(minY,Math.min(y,maxY));
+          bead.style.top=y+"px";
+          bead.dataset.active=(y<=minY+2)?"true":"false";
+        }
+        updateOutput();
       }
-    } else {
-      let maxY = parseInt(bead.dataset.initialTop);
-      let minY = dividerY + 5;
-      if (bead.dataset.active === "true") {
-        bead.style.top = minY + "px"; // snap up to divider
-      } else {
-        bead.style.top = maxY + "px"; // snap back down
+
+      function onMouseUp(){
+        if(bead.classList.contains("heaven")){
+          let minY=parseInt(bead.dataset.initialTop);
+          let maxY=dividerY-20;
+          bead.style.top=(bead.dataset.active==="true"?maxY:minY)+"px";
+        } else {
+          let maxY=parseInt(bead.dataset.initialTop);
+          let minY=dividerY+5;
+          bead.style.top=(bead.dataset.active==="true"?minY:maxY)+"px";
+        }
+        document.removeEventListener('mousemove',onMouseMove);
+        document.removeEventListener('mouseup',onMouseUp);
+        updateOutput();
       }
+
+      document.addEventListener('mousemove',onMouseMove);
+      document.addEventListener('mouseup',onMouseUp);
     }
 
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-    updateOutput();
-  }
-  document.addEventListener('mousemove', onMouseMove);
-  document.addEventListener('mouseup', onMouseUp);
-}
+    function updateOutput(){
+      let total=0;
+      let breakdownText="<strong>Breakdown:</strong><br>";
+      let digitArray=new Array(rods).fill(0);
 
-    function updateOutput() {
-      let total = 0;
-      let breakdownText = "<strong>Number Breakdown:</strong><br>";
-      let digitArray = new Array(rods).fill(0);
-
-      document.querySelectorAll('.rod').forEach((rod, index) => {
-        let rodValue = 0;
-        rod.querySelectorAll('.bead').forEach(b => {
-          if (b.dataset.active === "true") {
-            rodValue += parseInt(b.dataset.value);
+      document.querySelectorAll('.rod').forEach((rod,index)=>{
+        let rodValue=0;
+        rod.querySelectorAll('.bead').forEach(b=>{
+          if(b.dataset.active==="true"){
+            rodValue+=parseInt(b.dataset.value);
           }
         });
-        total += rodValue;
-        if (rodValue > 0) {
-          breakdownText += `${labels[index]}: ${rodValue}<br>`;
+        total+=rodValue;
+        if(rodValue>0){
+          breakdownText+=`${labels[index]}: ${rodValue}<br>`;
         }
-        digitArray[index] = rodValue / Math.pow(10, rods - 1 - index);
+        digitArray[index]=rodValue/Math.pow(10,rods-1-index);
       });
 
-      breakdown.innerHTML = breakdownText + `<br><strong>Total: ${total}</strong>`;
-      output.textContent = `Current total value = ${total}`;
-      digitsDisplay.textContent = `Digits: ${digitArray.join('')}`;
-
-      if ((mode === 'add' || mode === 'sub') && total === currentAnswer && currentAnswer !== 0) {
-        score++;
-        scoreDisplay.textContent = `Score: ${score}`;
-        alert("Correct! 🎉");
-        generateQuestion();
-        resetBeads();
-      }
+      breakdown.innerHTML=breakdownText+"<br><strong>Total: "+total+"</strong>";
+      output.textContent="Current total = "+total;
+      digitsDisplay.textContent="Digits: "+digitArray.join('');
     }
-
-    function resetBeads() {
-      document.querySelectorAll('.bead').forEach(b => {
-        b.style.top = b.dataset.initialTop + "px";
-        b.dataset.active = "false";
-      });
-      breakdown.innerHTML = "";
-      digitsDisplay.textContent = "";
-    }
-
-    function generateQuestion() {
-      if (mode === 'add' || mode === 'sub') {
-        let a = Math.floor(Math.random() * 50) + 1;
-        let b = Math.floor(Math.random() * 50) + 1;
-        if (mode === 'add') {
-          currentAnswer = a + b;
-          question.textContent = `Solve: ${a} + ${b}`;
-        } else {
-          currentAnswer = a - b;
-          if (currentAnswer < 0) currentAnswer = 0;
-          question.textContent = `Solve: ${a} - ${b}`;
-        }
-      } else {
-        question.textContent = "";
-        currentAnswer = 0;
-      }
-    }
-
-   function setMode(m) {
-  mode = m;
-  score = 0;
-  scoreDisplay.textContent = "";
-  resetBeads();
-  question.textContent = "";
-  output.textContent = `Mode: ${m.toUpperCase()}`;
-  breakdown.innerHTML = "";
-  digitsDisplay.textContent = "";
-
-  if (mode === 'add' || mode === 'sub') {
-    generateQuestion();
-  }
-}
+  </script>
+</body>
+</html>
