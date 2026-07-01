@@ -6,8 +6,9 @@
   <style>
     body { font-family: Arial, sans-serif; text-align: center; }
     .hidden { display: none; }
-    .abacus { display: flex; justify-content: center; margin: 20px; }
-    .rod { margin: 5px; }
+    .soroban { display: flex; justify-content: center; margin: 20px; }
+    .rod { display: flex; flex-direction: column; align-items: center; margin: 5px; }
+    .divider { width: 40px; height: 5px; background: black; margin: 5px 0; }
     .bead {
       width: 30px; height: 30px; border-radius: 50%;
       background: #ff6666; margin: 5px; cursor: pointer;
@@ -25,7 +26,7 @@
 <body>
   <!-- Login Page -->
   <div id="loginPage">
-    <h1>Welcome to Abacus Learning!</h1>
+    <h1>Welcome to Soroban Learning!</h1>
     <p>Enter your name to begin:</p>
     <input type="text" id="username" placeholder="Your Name">
     <button onclick="login()">Start</button>
@@ -45,7 +46,7 @@
   <!-- Game Page -->
   <div id="gamePage" class="hidden">
     <h2 id="modeTitle"></h2>
-    <div class="abacus" id="abacus"></div>
+    <div class="soroban" id="soroban"></div>
     <div id="question"></div>
     <div id="output"></div>
     <div id="score"></div>
@@ -62,12 +63,12 @@
   </div>
 
   <script>
-    const abacus = document.getElementById('abacus');
+    const soroban = document.getElementById('soroban');
     const output = document.getElementById('output');
     const question = document.getElementById('question');
     const scoreDisplay = document.getElementById('score');
     let mode = 'learn';
-    let rods = 5, beadsPerRod = 10;
+    let rods = 5; // 5 rods for digits
     let score = 0;
     let currentAnswer = 0;
     let playerName = "";
@@ -89,7 +90,7 @@
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('gamePage').classList.remove('hidden');
       document.getElementById('modeTitle').textContent = "Mode: " + m.toUpperCase();
-      buildAbacus();
+      buildSoroban();
       if (mode === 'add' || mode === 'sub') {
         generateQuestion();
       } else {
@@ -104,18 +105,34 @@
       document.getElementById('dashboard').classList.remove('hidden');
     }
 
-    function buildAbacus() {
-      abacus.innerHTML = "";
+    function buildSoroban() {
+      soroban.innerHTML = "";
       for (let r = 0; r < rods; r++) {
         let rod = document.createElement('div');
         rod.className = 'rod';
-        for (let b = 0; b < beadsPerRod; b++) {
-          let bead = document.createElement('div');
-          bead.className = 'bead';
-          bead.addEventListener('click', () => toggleBead(bead));
-          rod.appendChild(bead);
+        
+        // Heaven bead (worth 5)
+        let heaven = document.createElement('div');
+        heaven.className = 'bead heaven';
+        heaven.dataset.value = 5;
+        heaven.addEventListener('click', () => toggleBead(heaven));
+        rod.appendChild(heaven);
+
+        // Divider
+        let divider = document.createElement('div');
+        divider.className = 'divider';
+        rod.appendChild(divider);
+
+        // Earth beads (worth 1 each)
+        for (let b = 0; b < 4; b++) {
+          let earth = document.createElement('div');
+          earth.className = 'bead earth';
+          earth.dataset.value = 1;
+          earth.addEventListener('click', () => toggleBead(earth));
+          rod.appendChild(earth);
         }
-        abacus.appendChild(rod);
+
+        soroban.appendChild(rod);
       }
     }
 
@@ -125,14 +142,17 @@
     }
 
     function updateOutput() {
-      let count = document.querySelectorAll('.bead.active').length;
+      let total = 0;
+      document.querySelectorAll('.bead.active').forEach(b => {
+        total += parseInt(b.dataset.value);
+      });
       if (mode === 'learn') {
-        output.textContent = `You selected ${count} beads.`;
+        output.textContent = `You selected value: ${total}`;
       } else if (mode === 'practice') {
-        output.textContent = `Practice mode: Count the beads (${count}).`;
+        output.textContent = `Practice mode: Current value = ${total}`;
       } else if (mode === 'add' || mode === 'sub') {
-        output.textContent = `You selected ${count} beads.`;
-        if (count === currentAnswer) {
+        output.textContent = `Current value = ${total}`;
+        if (total === currentAnswer) {
           score++;
           scoreDisplay.textContent = `Score: ${score}`;
           alert("Correct! 🎉");
@@ -147,8 +167,8 @@
     }
 
     function generateQuestion() {
-      let a = Math.floor(Math.random() * 5) + 1;
-      let b = Math.floor(Math.random() * 5) + 1;
+      let a = Math.floor(Math.random() * 9) + 1;
+      let b = Math.floor(Math.random() * 9) + 1;
       if (mode === 'add') {
         currentAnswer = a + b;
         question.textContent = `Solve: ${a} + ${b}`;
@@ -169,7 +189,6 @@
       document.getElementById('dashboard').classList.add('hidden');
       document.getElementById('leaderboardPage').classList.remove('hidden');
       
-      // Sort by score descending
       leaderboard.sort((a, b) => b.score - a.score);
       
       let html = "<table><tr><th>Rank</th><th>Name</th><th>Mode</th><th>Score</th></tr>";
@@ -182,7 +201,7 @@
 
     function playAgain() {
       document.getElementById('leaderboardPage').classList.add('hidden');
-      startGame(mode); // restart last mode
+      startGame(mode);
     }
   </script>
 </body>
