@@ -11,18 +11,22 @@
     }
     .rod {
       position: relative;
-      width: 50px; height: 240px;
+      width: 50px; height: 260px;
       margin: 10px; background: #d2b48c; border-radius: 5px;
     }
     .divider {
       position: absolute;
-      top: 120px; /* middle of rod */
+      top: 100px; /* bar set higher */
       width: 100%; height: 6px; background: #000;
     }
     .slot {
       position: absolute;
       width: 100%; height: 24px;
       border: 1px dashed rgba(0,0,0,0.2);
+      transition: box-shadow 0.2s;
+    }
+    .slot.glow {
+      box-shadow: 0 0 10px 3px yellow;
     }
     .bead {
       position: absolute;
@@ -39,7 +43,7 @@
   </style>
 </head>
 <body>
-  <h1>Soroban Abacus (Drag Beads with Slots)</h1>
+  <h1>Soroban Abacus (Glowing Slots)</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
@@ -66,24 +70,24 @@
         divider.className = 'divider';
         rod.appendChild(divider);
 
-        // Heaven bead slot
+        // Heaven slot + bead
         let heavenSlot = document.createElement('div');
         heavenSlot.className = 'slot';
         heavenSlot.style.top = "20px";
         rod.appendChild(heavenSlot);
 
-        // Heaven bead
-        let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,100]);
+        let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,80], [heavenSlot]);
         rod.appendChild(heaven);
 
-        // Earth bead slots
-        [140,170,200,230].forEach(pos=>{
+        // Earth slots + beads
+        let earthPositions = [140,170,200,230];
+        earthPositions.forEach(pos=>{
           let slot = document.createElement('div');
           slot.className = 'slot';
           slot.style.top = pos+"px";
           rod.appendChild(slot);
 
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos,130]);
+          let earth = createBead(pos, 1*Math.pow(10,r), "earth", [pos,110], [slot]);
           rod.appendChild(earth);
         });
 
@@ -96,13 +100,14 @@
       }
     }
 
-    function createBead(initialTop,value,type,snapPoints){
+    function createBead(initialTop,value,type,snapPoints,slots){
       let bead=document.createElement('div');
       bead.className='bead '+type;
       bead.style.top=initialTop+"px";
       bead.dataset.value=value;
       bead.dataset.snapPoints=JSON.stringify(snapPoints);
       bead.dataset.active="false";
+      bead.slots=slots;
       bead.addEventListener('mousedown',startDrag);
       return bead;
     }
@@ -116,16 +121,30 @@
       function onMouseMove(ev){
         let y=ev.clientY-rodRect.top;
         bead.style.top=y+"px";
+
+        // Glow nearest slot
+        let nearest=snapPoints.reduce((prev,curr)=>
+          Math.abs(curr-y)<Math.abs(prev-y)?curr:prev
+        );
+        bead.slots.forEach(slot=>{
+          let slotY=parseInt(slot.style.top);
+          if(Math.abs(slotY-nearest)<5){
+            slot.classList.add("glow");
+          } else {
+            slot.classList.remove("glow");
+          }
+        });
       }
 
       function onMouseUp(){
-        // Snap to nearest slot
         let currentY=parseInt(bead.style.top);
         let nearest=snapPoints.reduce((prev,curr)=>
           Math.abs(curr-currentY)<Math.abs(prev-currentY)?curr:prev
         );
         bead.style.top=nearest+"px";
         bead.dataset.active=(nearest!==snapPoints[0])?"true":"false";
+
+        bead.slots.forEach(slot=>slot.classList.remove("glow"));
 
         document.removeEventListener('mousemove',onMouseMove);
         document.removeEventListener('mouseup',onMouseUp);
