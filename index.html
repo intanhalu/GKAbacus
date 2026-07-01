@@ -11,7 +11,7 @@
     }
     .rod {
       position: relative;
-      width: 50px; height: 260px;
+      width: 60px; height: 260px;
       margin: 10px; background: #d2b48c; border-radius: 5px;
     }
     .divider {
@@ -52,7 +52,7 @@
     const output = document.getElementById('output');
     const breakdown = document.getElementById('breakdown');
     const digitsDisplay = document.getElementById('digits');
-    let rods = 5;
+    const rods = 5;
     const labels = ["Ten-Thousands","Thousands","Hundreds","Tens","Ones"];
 
     buildSoroban();
@@ -77,7 +77,7 @@
         let heaven = createBead(20, 5*Math.pow(10,r), "heaven", [20,80], [heavenSlot]);
         rod.appendChild(heaven);
 
-        // Earth beads: each has its own resting slot and active slot above the bead below
+        // Earth beads: each has resting slot and active slot above the bead below
         let earthPositions = [140,170,200,230];
         earthPositions.forEach((pos, idx)=>{
           let slot = document.createElement('div');
