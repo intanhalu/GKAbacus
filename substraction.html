@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Subtraction Practice with Soroban</title>
+  <title>Latihan Abacus (Tolak)</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     h1 { margin-top: 20px; }
     #question { font-size: 24px; margin: 20px; }
+    #digits { font-size: 20px; margin: 10px; color: #4b0082; }
+    #feedback { font-size: 20px; margin: 10px; font-weight: bold; }
     select, button { padding: 10px 20px; margin: 10px; font-size: 16px; }
     .soroban {
       display: flex; justify-content: center; margin: 20px;
@@ -23,9 +25,13 @@
     .bead {
       position: absolute; left: 50%; transform: translateX(-50%);
       width: 40px; height: 22px; border-radius: 11px;
-      background: #c19a6b; cursor: pointer;
+      background: #c19a6b; cursor: grab;
       box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-      transition: top 0.15s;
+      transition: top 0.15s, box-shadow 0.3s;
+    }
+    .bead.active {
+      box-shadow: 0 0 10px 4px gold;
+      background: #deb887;
     }
     .label {
       position: absolute; bottom: -25px; width: 100%; text-align: center;
@@ -34,9 +40,9 @@
   </style>
 </head>
 <body>
-  <h1>➖ Subtraction Practice with Soroban</h1>
+  <h1>🧮 Latihan Abacus (Tolak)</h1>
 
-  <label for="level">Choose Level:</label>
+  <label for="level">Pilih Level:</label>
   <select id="level" onchange="newQuestion()">
     <option value="1">Beginner (1 Digit)</option>
     <option value="2">Intermediate (2 Digit)</option>
@@ -44,13 +50,15 @@
   </select>
 
   <div id="question"></div>
-  <button onclick="checkAnswer()">Check Answer</button>
   <button onclick="newQuestion()">New Question</button>
-  <br><br>
-  <a href="index.html">🏠 Back to Home</a>
+  <div id="digits"></div>
+  <div id="feedback"></div>
+  
 
   <div class="soroban" id="soroban"></div>
-
+<br><br>
+  <a href="index.html">🏠 Back to Home</a>
+  
   <script>
     const soroban = document.getElementById('soroban');
     const labels = ["Ten-Thousands","Thousands","Hundreds","Tens","Ones"];
@@ -97,27 +105,61 @@
       bead.dataset.value=value;
       bead.dataset.initialTop=initialTop;
       bead.dataset.active="false";
-      bead.addEventListener('click',()=>toggleBead(bead));
+      bead.addEventListener('mousedown',startDrag);
       return bead;
     }
 
-    function toggleBead(bead){
-      if(bead.classList.contains("heaven")){
-        bead.dataset.active = (bead.dataset.active==="true")?"false":"true";
-        bead.style.top = (bead.dataset.active==="true")?80:bead.dataset.initialTop+"px";
-      } else {
-        let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
-        let idx = parseInt(bead.dataset.index);
-        if(bead.dataset.active==="true"){
-          bead.dataset.active="false";
-          bead.style.top=bead.dataset.initialTop+"px";
+    function startDrag(e){
+      const bead=e.target;
+      const rod=bead.parentElement;
+      const rodRect=rod.getBoundingClientRect();
+      let offsetY = e.clientY - rodRect.top - parseInt(bead.style.top);
+
+      function onMouseMove(ev){
+        let y=ev.clientY-rodRect.top-offsetY;
+        bead.style.top=y+"px";
+      }
+
+      function onMouseUp(){
+        let nearest;
+        if (bead.classList.contains("heaven")) {
+          nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
         } else {
-          if(idx===0 || siblings[idx-1].dataset.active==="true"){
-            bead.dataset.active="true";
-            bead.style.top=(idx===0)?110:siblings[idx-1].dataset.initialTop+"px";
+          let idx = parseInt(bead.dataset.index);
+          if (bead.dataset.active === "true") {
+            nearest = parseInt(bead.dataset.initialTop); // move back down
+          } else {
+            if (idx === 0) {
+              nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
+            } else {
+              let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
+              if (siblings[idx-1].dataset.active === "true") {
+                nearest = parseInt(siblings[idx-1].dataset.initialTop);
+              } else {
+                nearest = parseInt(bead.dataset.initialTop);
+              }
+            }
           }
         }
+
+        bead.style.top = nearest + "px";
+        bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
+
+        if (bead.dataset.active === "true") {
+          bead.classList.add("active");
+        } else {
+          bead.classList.remove("active");
+        }
+
+        document.removeEventListener('mousemove',onMouseMove);
+        document.removeEventListener('mouseup',onMouseUp);
+
+        updateDigits();
+        autoCheckAnswer();
       }
+
+      document.addEventListener('mousemove',onMouseMove);
+      document.addEventListener('mouseup',onMouseUp);
     }
 
     function getSorobanValue(){
@@ -130,6 +172,22 @@
         });
       });
       return total;
+    }
+
+    function updateDigits(){
+      let total = getSorobanValue();
+      document.getElementById('digits').textContent = "Digits: " + total;
+    }
+
+    function autoCheckAnswer(){
+      let sorobanValue = getSorobanValue();
+      if (sorobanValue === currentAnswer) {
+        document.getElementById('feedback').textContent = "✅ Correct! 🎉 Well done!";
+        document.getElementById('feedback').style.color = "green";
+      } else {
+        document.getElementById('feedback').textContent = "❌ Wrong. Try again!";
+        document.getElementById('feedback').style.color = "red";
+      }
     }
 
     function newQuestion() {
@@ -157,16 +215,10 @@
       document.querySelectorAll('.bead').forEach(b=>{
         b.dataset.active="false";
         b.style.top=b.dataset.initialTop+"px";
+        b.classList.remove("active");
       });
-    }
-
-    function checkAnswer() {
-      let sorobanValue = getSorobanValue();
-      if (sorobanValue === currentAnswer) {
-        alert("✅ Correct! 🎉 Well done!");
-      } else {
-        alert("❌ Incorrect. The correct answer is " + currentAnswer);
-      }
+      updateDigits();
+      document.getElementById('feedback').textContent = "";
     }
 
     // First question on load
@@ -174,4 +226,3 @@
   </script>
 </body>
 </html>
-
