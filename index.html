@@ -41,6 +41,11 @@
       font-size: 22px;
       color: #fff;
     }
+    .emoji {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
     .sub-links {
       display: flex;
       flex-direction: column;
@@ -81,20 +86,23 @@
   <div class="menu">
     <!-- Soroban Abacus -->
     <div class="card" onclick="location.href='asasabacus.html'">
+      <span class="emoji">🧮</span>
       <h2>Asas Abacus</h2>
       <a class="single-link" href="asasabacus.html">Asas Abacus</a>
     </div>
 
     <!-- Addition -->
-    <div class="card">
+    <div class="card" onclick="location.href='addition.html'">
+      <span class="emoji">➕</span>
       <h2>Addition</h2>
-      
+      <a class="single-link" href="addition.html">Tambah Abacus</a>
     </div>
 
     <!-- Subtraction -->
-    <div class="card">
+    <div class="card" onclick="location.href='substraction.html'">
+      <span class="emoji">➖</span>
       <h2>Subtraction</h2>
-      
+      <a class="single-link" href="substraction.html">Tolak Abacus</a>
     </div>
   </div>
 </body>
