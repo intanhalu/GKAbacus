@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Soroban Addition Practice</title>
+  <title>Latihan Abacus (Tambah)</title>
   <style>
     body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
     h1 { margin-top: 20px; }
@@ -40,9 +40,9 @@
   </style>
 </head>
 <body>
-  <h1>🧮 Soroban Addition Practice</h1>
+  <h1>🧮 Latihan Abacus Tambah</h1>
 
-  <label for="level">Choose Level:</label>
+  <label for="level">Pilih Level:</label>
   <select id="level" onchange="newQuestion()">
     <option value="1">Beginner (1 Digit)</option>
     <option value="2">Intermediate (2 Digit)</option>
@@ -53,14 +53,14 @@
   <button onclick="newQuestion()">New Question</button>
   <div id="digits"></div>
   <div id="feedback"></div>
-  <br><br>
-  <a href="index.html">🏠 Back to Home</a>
+  
 
   <div class="soroban" id="soroban"></div>
-
+<br><br>
+  <a href="index.html">🏠 Back to Home</a>
   <script>
     const soroban = document.getElementById('soroban');
-    const labels = ["Ten-Thousands","Thousands","Hundreds","Tens","Ones"];
+    const labels = ["Sepuluh Ribu","Seribu","Seratus","Sepuluh","Sa"];
     let currentAnswer = 0;
 
     buildSoroban();
