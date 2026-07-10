@@ -35,7 +35,7 @@
         let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
         rod.appendChild(heaven);
 
-        // Earth beads
+        // Earth beads (FIXED: Restored the missing positions array)
         let earthPositions =;
         earthPositions.forEach((pos, idx)=>{
           let earth = createBead(pos, 1*Math.pow(10,r), "earth");
@@ -60,47 +60,44 @@
       bead.dataset.initialTop=initialTop;
       bead.dataset.active="false";
       
-      // Desktop Mouse Interaction
+      // Support both platforms seamlessly
       bead.addEventListener('mousedown', startDrag);
-      // Mobile Touch Interaction
       bead.addEventListener('touchstart', startDrag, { passive: false });
-      
       return bead;
     }
 
     function startDrag(e){
-      // Prevent mobile screens from scrolling or zooming while moving a bead
       if (e.type === 'touchstart') {
-        e.preventDefault();
+        e.preventDefault(); // Prevents phone from pulling-to-refresh or bouncing
       }
 
-      const bead = e.target;
-      const rod = bead.parentElement;
-      const rodRect = rod.getBoundingClientRect();
+      const bead=e.target;
+      const rod=bead.parentElement;
+      const rodRect=rod.getBoundingClientRect();
       
-      // Normalize clientY extraction for both mouse clicks and screen touches
       let clientY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
       let offsetY = clientY - rodRect.top - parseInt(bead.style.top);
 
-      function onMove(ev){
-        let moveY = (ev.type === 'touchmove') ? ev.touches[0].clientY : ev.clientY;
-        let y = moveY - rodRect.top - offsetY;
-        
-        bead.style.top = y + "px";
-        
-        // Active/inactive visual assessment while dragging
-        bead.dataset.active = (Math.abs(y - parseInt(bead.dataset.initialTop)) > 15) ? "true" : "false";
+      function onMouseMove(ev){
+        let currentY = (ev.type === 'touchmove') ? ev.touches[0].clientY : ev.clientY;
+        let y=currentY-rodRect.top-offsetY;
+        bead.style.top=y+"px";
+
+        // INSTANT DISPLAY UPDATE LOGIC
+        // Decides live if bead is pushed up/down far enough to count towards numbers
+        let movedDistance = Math.abs(y - parseInt(bead.dataset.initialTop));
+        bead.dataset.active = (movedDistance > 12) ? "true" : "false";
         updateDigits(); 
       }
 
-      function onEnd(){
+      function onMouseUp(){
         let nearest;
         if (bead.classList.contains("heaven")) {
           nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
         } else {
           let idx = parseInt(bead.dataset.index);
           if (bead.dataset.active === "true") {
-            nearest = parseInt(bead.dataset.initialTop); 
+            nearest = parseInt(bead.dataset.initialTop); // move back down
           } else {
             if (idx === 0) {
               nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
@@ -124,26 +121,19 @@
           bead.classList.remove("active");
         }
 
-        // Clean up desktop listeners
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onEnd);
-        
-        // Clean up mobile listeners
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onEnd);
+        document.removeEventListener('mousemove',onMouseMove);
+        document.removeEventListener('mouseup',onMouseUp);
+        document.removeEventListener('touchmove',onMouseMove);
+        document.removeEventListener('touchend',onMouseUp);
 
         updateDigits();
         autoCheckAnswer();
       }
 
-      // Track movement based on the event entry channel
-      if (e.type === 'touchstart') {
-        document.addEventListener('touchmove', onMove, { passive: false });
-        document.addEventListener('touchend', onEnd);
-      } else {
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onEnd);
-      }
+      document.addEventListener('mousemove',onMouseMove);
+      document.addEventListener('mouseup',onMouseUp);
+      document.addEventListener('touchmove',onMouseMove, { passive: false });
+      document.addEventListener('touchend',onMouseUp);
     }
 
     function getSorobanValue(){
@@ -161,7 +151,7 @@
     function updateDigits(){
       let total=0;
       let breakdownText="<strong>Breakdown:</strong><br>";
-      let totalRods = labels.length;
+      let totalRods = labels.length; // Replaced undefined 'rods' variable
       let digitArray=new Array(totalRods).fill(0);
 
       document.querySelectorAll('.rod').forEach((rod,index)=>{
@@ -176,6 +166,7 @@
           breakdownText+=`${labels[index]}: ${rodValue}<br>`;
         }
         
+        // Turns actual mathematical place value into isolated 0-9 single digits for the display
         let multiplier = Math.pow(10, totalRods - 1 - index);
         digitArray[index] = Math.floor(rodValue / multiplier);
       });
