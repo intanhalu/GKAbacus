@@ -40,19 +40,11 @@
   </style>
 </head>
 <body>
-  <h1>🧮 Latihan Abacus Tambah</h1>
-
-  <label for="level">Pilih Level:</label>
-  <select id="level" onchange="newQuestion()">
-    <option value="1">Beginner (1 Digit)</option>
-    <option value="2">Intermediate (2 Digit)</option>
-    <option value="3">Advanced (3 Digit)</option>
-  </select>
-
-  <div id="question"></div>
-  <button onclick="newQuestion()">New Question</button>
+  <h1>Asas Abacus</h1>
+  <div class="soroban" id="soroban"></div>
+  <div id="output"></div>
+  <div id="breakdown"></div>
   <div id="digits"></div>
-  <div id="feedback"></div>
   
 
   <div class="soroban" id="soroban"></div>
@@ -173,10 +165,30 @@
       return total;
     }
 
-    function updateDigits(){
-      let total = getSorobanValue();
-      document.getElementById('digits').textContent = "Digits: " + total;
+    function updateOutput(){
+      let total=0;
+      let breakdownText="<strong>Breakdown:</strong><br>";
+      let digitArray=new Array(rods).fill(0);
+
+      document.querySelectorAll('.rod').forEach((rod,index)=>{
+        let rodValue=0;
+        rod.querySelectorAll('.bead').forEach(b=>{
+          if(b.dataset.active==="true"){
+            rodValue+=parseInt(b.dataset.value);
+          }
+        });
+        total+=rodValue;
+        if(rodValue>0){
+          breakdownText+=`${labels[index]}: ${rodValue}<br>`;
+        }
+        digitArray[index]=rodValue/Math.pow(10,rods-1-index);
+      });
+
+      breakdown.innerHTML=breakdownText+"<br><strong>Total: "+total+"</strong>";
+      output.textContent="Current total = "+total;
+      digitsDisplay.textContent="Digits: "+digitArray.join('');
     }
+
 
     function autoCheckAnswer(){
       let sorobanValue = getSorobanValue();
