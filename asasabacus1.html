@@ -42,21 +42,15 @@
 <body>
   <h1>🧮 Latihan Abacus Asas</h1>
 
-  <label for="level">Pilih Level:</label>
-  <select id="level" onchange="newQuestion()">
-    <option value="1">Beginner (1 Digit)</option>
-    <option value="2">Intermediate (2 Digit)</option>
-    <option value="3">Advanced (3 Digit)</option>
-  </select>
-
-  <div id="question"></div>
-  <button onclick="newQuestion()">New Question</button>
+  <div class="soroban" id="soroban"></div>
+  <div id="output"></div>
+  <div id="breakdown"></div>
   <div id="digits"></div>
-  <div id="feedback"></div>
+
   
 
   <div class="soroban" id="soroban"></div>
-<br><br>
+  <br><br>
   <a href="index.html">🏠 Back to Home</a>
   <script>
     const soroban = document.getElementById('soroban');
