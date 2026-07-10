@@ -1,57 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Latihan Asas Abacus </title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
-    h1 { margin-top: 20px; }
-    #question { font-size: 24px; margin: 20px; }
-    #digits { font-size: 20px; margin: 10px; color: #4b0082; }
-    #feedback { font-size: 20px; margin: 10px; font-weight: bold; }
-    select, button { padding: 10px 20px; margin: 10px; font-size: 16px; }
-    .soroban {
-      display: flex; justify-content: center; margin: 20px;
-      background: #8b5a2b; padding: 20px; border-radius: 10px;
-    }
-    .rod {
-      position: relative;
-      width: 60px; height: 260px;
-      margin: 10px; background: #d2b48c; border-radius: 5px;
-    }
-    .divider {
-      position: absolute; top: 100px; width: 100%; height: 6px; background: #000;
-    }
-    .bead {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 40px; height: 22px; border-radius: 11px;
-      background: #c19a6b; cursor: grab;
-      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-      transition: top 0.15s, box-shadow 0.3s;
-    }
-    .bead.active {
-      box-shadow: 0 0 10px 4px gold;
-      background: #deb887;
-    }
-    .label {
-      position: absolute; bottom: -25px; width: 100%; text-align: center;
-      font-weight: bold; color: #fff;
-    }
-  </style>
-</head>
 <body>
   <h1>Asas Abacus</h1>
   <div class="soroban" id="soroban"></div>
   <div id="output"></div>
   <div id="breakdown"></div>
   <div id="digits"></div>
+  <div id="feedback"></div>
   
-
-  <div class="soroban" id="soroban"></div>
-<br><br>
+  <br><br>
   <a href="index.html">🏠 Back to Home</a>
+  
   <script>
     const soroban = document.getElementById('soroban');
+    const output = document.getElementById('output');
+    const breakdown = document.getElementById('breakdown');
+    const digitsDisplay = document.getElementById('digits');
+
     const labels = ["Sepuluh Ribu","Seribu","Seratus","Sepuluh","Sa"];
     let currentAnswer = 0;
 
@@ -73,7 +36,7 @@
         rod.appendChild(heaven);
 
         // Earth beads
-        let earthPositions = [140,170,200,230];
+        let earthPositions =;
         earthPositions.forEach((pos, idx)=>{
           let earth = createBead(pos, 1*Math.pow(10,r), "earth");
           earth.dataset.index = idx;
@@ -96,29 +59,48 @@
       bead.dataset.value=value;
       bead.dataset.initialTop=initialTop;
       bead.dataset.active="false";
-      bead.addEventListener('mousedown',startDrag);
+      
+      // Desktop Mouse Interaction
+      bead.addEventListener('mousedown', startDrag);
+      // Mobile Touch Interaction
+      bead.addEventListener('touchstart', startDrag, { passive: false });
+      
       return bead;
     }
 
     function startDrag(e){
-      const bead=e.target;
-      const rod=bead.parentElement;
-      const rodRect=rod.getBoundingClientRect();
-      let offsetY = e.clientY - rodRect.top - parseInt(bead.style.top);
-
-      function onMouseMove(ev){
-        let y=ev.clientY-rodRect.top-offsetY;
-        bead.style.top=y+"px";
+      // Prevent mobile screens from scrolling or zooming while moving a bead
+      if (e.type === 'touchstart') {
+        e.preventDefault();
       }
 
-      function onMouseUp(){
+      const bead = e.target;
+      const rod = bead.parentElement;
+      const rodRect = rod.getBoundingClientRect();
+      
+      // Normalize clientY extraction for both mouse clicks and screen touches
+      let clientY = (e.type === 'touchstart') ? e.touches[0].clientY : e.clientY;
+      let offsetY = clientY - rodRect.top - parseInt(bead.style.top);
+
+      function onMove(ev){
+        let moveY = (ev.type === 'touchmove') ? ev.touches[0].clientY : ev.clientY;
+        let y = moveY - rodRect.top - offsetY;
+        
+        bead.style.top = y + "px";
+        
+        // Active/inactive visual assessment while dragging
+        bead.dataset.active = (Math.abs(y - parseInt(bead.dataset.initialTop)) > 15) ? "true" : "false";
+        updateDigits(); 
+      }
+
+      function onEnd(){
         let nearest;
         if (bead.classList.contains("heaven")) {
           nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
         } else {
           let idx = parseInt(bead.dataset.index);
           if (bead.dataset.active === "true") {
-            nearest = parseInt(bead.dataset.initialTop); // move back down
+            nearest = parseInt(bead.dataset.initialTop); 
           } else {
             if (idx === 0) {
               nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
@@ -142,15 +124,26 @@
           bead.classList.remove("active");
         }
 
-        document.removeEventListener('mousemove',onMouseMove);
-        document.removeEventListener('mouseup',onMouseUp);
+        // Clean up desktop listeners
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onEnd);
+        
+        // Clean up mobile listeners
+        document.removeEventListener('touchmove', onMove);
+        document.removeEventListener('touchend', onEnd);
 
         updateDigits();
         autoCheckAnswer();
       }
 
-      document.addEventListener('mousemove',onMouseMove);
-      document.addEventListener('mouseup',onMouseUp);
+      // Track movement based on the event entry channel
+      if (e.type === 'touchstart') {
+        document.addEventListener('touchmove', onMove, { passive: false });
+        document.addEventListener('touchend', onEnd);
+      } else {
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onEnd);
+      }
     }
 
     function getSorobanValue(){
@@ -168,7 +161,8 @@
     function updateDigits(){
       let total=0;
       let breakdownText="<strong>Breakdown:</strong><br>";
-      let digitArray=new Array(rods).fill(0);
+      let totalRods = labels.length;
+      let digitArray=new Array(totalRods).fill(0);
 
       document.querySelectorAll('.rod').forEach((rod,index)=>{
         let rodValue=0;
@@ -181,7 +175,9 @@
         if(rodValue>0){
           breakdownText+=`${labels[index]}: ${rodValue}<br>`;
         }
-        digitArray[index]=rodValue/Math.pow(10,rods-1-index);
+        
+        let multiplier = Math.pow(10, totalRods - 1 - index);
+        digitArray[index] = Math.floor(rodValue / multiplier);
       });
 
       breakdown.innerHTML=breakdownText+"<br><strong>Total: "+total+"</strong>";
@@ -189,21 +185,22 @@
       digitsDisplay.textContent="Digits: "+digitArray.join('');
     }
 
-
     function autoCheckAnswer(){
       let sorobanValue = getSorobanValue();
+      let feedback = document.getElementById('feedback');
       if (sorobanValue === currentAnswer) {
-        document.getElementById('feedback').textContent = "✅ Correct! 🎉 Well done!";
-        document.getElementById('feedback').style.color = "green";
+        feedback.textContent = "✅ Correct! 🎉 Well done!";
+        feedback.style.color = "green";
       } else {
-        document.getElementById('feedback').textContent = "❌ Wrong. Try again!";
-        document.getElementById('feedback').style.color = "red";
+        feedback.textContent = "❌ Wrong. Try again!";
+        feedback.style.color = "red";
       }
     }
 
-   
-    // First question on load
+    function newQuestion() {
+       currentAnswer = 0; 
+    }
+
     newQuestion();
   </script>
 </body>
-</html>
