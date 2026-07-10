@@ -127,7 +127,7 @@
         document.removeEventListener('touchend',onMouseUp);
 
         updateDigits();
-        autoCheckAnswer();
+        
       }
 
       document.addEventListener('mousemove',onMouseMove);
@@ -176,22 +176,7 @@
       digitsDisplay.textContent="Digits: "+digitArray.join('');
     }
 
-    function autoCheckAnswer(){
-      let sorobanValue = getSorobanValue();
-      let feedback = document.getElementById('feedback');
-      if (sorobanValue === currentAnswer) {
-        feedback.textContent = "✅ Correct! 🎉 Well done!";
-        feedback.style.color = "green";
-      } else {
-        feedback.textContent = "❌ Wrong. Try again!";
-        feedback.style.color = "red";
-      }
-    }
-
-    function newQuestion() {
-       currentAnswer = 0; 
-    }
-
+    
     newQuestion();
   </script>
 </body>
