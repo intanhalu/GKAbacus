@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ASAS Soroban Abacus</title>
+<title>ASAS Abacus for Kids</title>
 <style>
     body {
         font-family: 'Comic Sans MS', cursive, sans-serif;
@@ -16,10 +16,16 @@
         color: #ff6b6b;
         margin-top: 20px;
     }
-    #total {
-        font-size: 2em;
+    #countDisplay {
+        font-size: 2.5rem;
+        color: #4d96ff;
         margin-top: 10px;
-        color: #333;
+        font-weight: bold;
+    }
+    #placeValues {
+        font-size: 1.5rem;
+        margin-top: 5px;
+        color: #6bcb77;
     }
     .abacus {
         display: flex;
@@ -33,14 +39,14 @@
         margin: 0 20px;
         position: relative;
     }
-    .beam {
+    .rod-label {
         position: absolute;
-        top: 120px;
-        left: -20px;
-        width: 50px;
-        height: 10px;
-        background-color: #8b5e3c;
-        z-index: 1;
+        top: -30px;
+        left: -25px;
+        width: 60px;
+        text-align: center;
+        font-weight: bold;
+        color: #333;
     }
     .bead {
         width: 40px;
@@ -51,80 +57,77 @@
         cursor: pointer;
         transition: top 0.3s;
     }
+    /* Different bead colors */
     .color1 { background-color: #ff6b6b; }
     .color2 { background-color: #ffd93d; }
+    .color3 { background-color: #6bcb77; }
+    .color4 { background-color: #4d96ff; }
 </style>
 </head>
 <body>
 
-<h1>ASAS Soroban Abacus</h1>
-<p>Click beads to move them and see the total!</p>
-<div id="total">Total: 0</div>
+<h1>ASAS Abacus for Kids</h1>
+<p>Click the beads to move them up and down!</p>
+<div id="countDisplay">Total: 0</div>
+<div id="placeValues">Ones: 0 | Tens: 0 | Hundreds: 0 | Thousands: 0 | Ten-Thousands: 0</div>
 
 <div class="abacus" id="abacus"></div>
 
 <script>
     const abacus = document.getElementById('abacus');
-    const totalDisplay = document.getElementById('total');
-    const rods = 5; // number of rods (digits)
-    const beadSpacing = 50;
+    const countDisplay = document.getElementById('countDisplay');
+    const placeValuesDisplay = document.getElementById('placeValues');
 
-    // Store bead states
-    let sorobanState = Array.from({ length: rods }, () => ({ upper: 0, lower: 0 }));
+    const rods = 5; // number of rods
+    const beadsPerRod = 5; // beads per rod
+    const beadSpacing = 50; // vertical spacing
+    let totalCount = 0;
+    let rodCounts = Array(rods).fill(0); // track beads per rod
 
-    function updateTotal() {
-        let total = 0;
-        for (let i = 0; i < rods; i++) {
-            let value = sorobanState[i].upper * 5 + sorobanState[i].lower;
-            total += value * Math.pow(10, rods - i - 1);
-        }
-        totalDisplay.textContent = `Total: ${total}`;
-    }
+    const placeNames = ["Ones", "Tens", "Hundreds", "Thousands", "Ten-Thousands"];
 
+    // Create rods and beads
     for (let r = 0; r < rods; r++) {
         const rod = document.createElement('div');
         rod.classList.add('rod');
 
-        // Beam
-        const beam = document.createElement('div');
-        beam.classList.add('beam');
-        rod.appendChild(beam);
+        // Label for place value
+        const label = document.createElement('div');
+        label.classList.add('rod-label');
+        label.textContent = placeNames[r];
+        rod.appendChild(label);
 
-        // Upper bead (worth 5)
-        const upperBead = document.createElement('div');
-        upperBead.classList.add('bead', 'color1');
-        upperBead.style.top = '20px';
-        upperBead.addEventListener('click', () => {
-            if (sorobanState[r].upper === 0) {
-                upperBead.style.top = '90px'; // move down to beam
-                sorobanState[r].upper = 1;
-            } else {
-                upperBead.style.top = '20px'; // move up
-                sorobanState[r].upper = 0;
-            }
-            updateTotal();
-        });
-        rod.appendChild(upperBead);
+        for (let b = 0; b < beadsPerRod; b++) {
+            const bead = document.createElement('div');
+            bead.classList.add('bead', `color${(b % 4) + 1}`);
+            bead.style.top = `${b * beadSpacing + 10}px`;
 
-        // Lower beads (worth 1 each)
-        for (let b = 0; b < 4; b++) {
-            const lowerBead = document.createElement('div');
-            lowerBead.classList.add('bead', 'color2');
-            lowerBead.style.top = `${150 + b * beadSpacing}px`;
-            lowerBead.addEventListener('click', () => {
-                if (parseInt(lowerBead.style.top) > 150) {
-                    lowerBead.style.top = `${110 + b * beadSpacing}px`; // move up to beam
-                    sorobanState[r].lower++;
+            bead.dataset.up = "false"; // bead starts down
+
+            bead.addEventListener('click', () => {
+                if (bead.dataset.up === "false") {
+                    bead.style.top = `${10}px`; // move to top
+                    bead.dataset.up = "true";
+                    totalCount += Math.pow(10, r);
+                    rodCounts[r]++;
                 } else {
-                    lowerBead.style.top = `${150 + b * beadSpacing}px`; // move down
-                    sorobanState[r].lower--;
+                    bead.style.top = `${b * beadSpacing + 10}px`; // move back down
+                    bead.dataset.up = "false";
+                    totalCount -= Math.pow(10, r);
+                    rodCounts[r]--;
                 }
-                updateTotal();
+                updateDisplay();
             });
-            rod.appendChild(lowerBead);
-        }
 
+            rod.appendChild(bead);
+        }
         abacus.appendChild(rod);
+    }
+
+    function updateDisplay() {
+        countDisplay.textContent = `Total: ${totalCount}`;
+        let placeText = placeNames.map((name, i) => `${name}: ${rodCounts[i]}`).join(" | ");
+        placeValuesDisplay.textContent = placeText;
     }
 </script>
 
