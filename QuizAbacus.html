@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kids Abacus Quiz - Levels</title>
+<title>Kids Abacus Quiz - Real Beads</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -25,17 +25,9 @@
         grid-gap: 5px;
         justify-content: center;
     }
-    .bead {
+    .bead-img {
         width: 50px;
         height: 50px;
-        border-radius: 50%;
-        background: radial-gradient(circle at 30% 30%, #d4a373, #8b5e3c);
-        box-shadow: inset -2px -2px 5px rgba(0,0,0,0.3);
-        margin: auto;
-    }
-    .empty {
-        background-color: transparent;
-        border: 2px dashed #ccc;
     }
     #choices {
         margin-top: 20px;
@@ -88,28 +80,28 @@
         const abacusDiv = document.getElementById("abacus");
         abacusDiv.innerHTML = "";
 
-        // For numbers > 10, show two rows
         if (num <= 10) {
             for (let i = 1; i <= 10; i++) {
-                const bead = document.createElement("div");
-                bead.className = i <= num ? "bead" : "empty";
-                abacusDiv.appendChild(bead);
+                const img = document.createElement("img");
+                img.src = i <= num ? "bead.png" : "empty.png";
+                img.className = "bead-img";
+                abacusDiv.appendChild(img);
             }
         } else {
             let tens = Math.floor(num / 10);
             let ones = num % 10;
 
-            // First row for tens
             for (let i = 1; i <= 10; i++) {
-                const bead = document.createElement("div");
-                bead.className = i <= tens ? "bead" : "empty";
-                abacusDiv.appendChild(bead);
+                const img = document.createElement("img");
+                img.src = i <= tens ? "bead.png" : "empty.png";
+                img.className = "bead-img";
+                abacusDiv.appendChild(img);
             }
-            // Second row for ones
             for (let i = 1; i <= 10; i++) {
-                const bead = document.createElement("div");
-                bead.className = i <= ones ? "bead" : "empty";
-                abacusDiv.appendChild(bead);
+                const img = document.createElement("img");
+                img.src = i <= ones ? "bead.png" : "empty.png";
+                img.className = "bead-img";
+                abacusDiv.appendChild(img);
             }
         }
     }
@@ -160,7 +152,6 @@
         document.getElementById("score").textContent = `Score: ${score}`;
     }
 
-    // Start game
     generateQuestion();
 </script>
 
