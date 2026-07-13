@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Abakus Soroban Mudah Alih</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 10px;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+        h1 { color: #2c3e50; font-size: 22px; margin: 10px 0 5px 0; }
+        .desc { color: #7f8c8d; font-size: 13px; margin-bottom: 15px; padding: 0 10px; }
+        
+        .tabs { 
+            display: flex; 
+            justify-content: center; 
+            gap: 5px; 
+            margin-bottom: 15px; 
+            padding: 0 10px;
+        }
+        .tabs button {
+            flex: 1;
+            max-width: 110px;
+            padding: 10px 5px;
+            font-size: 13px;
+            cursor: pointer;
+            border: 2px solid #bdc3c7;
+            background: white;
+            border-radius: 20px;
+            font-weight: bold;
+            transition: all 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .tabs button.active {
+            background-color: #d35400;
+            color: white;
+            border-color: #ba4a00;
+        }
+
+        .board-wrapper {
+            background: white;
+            width: 95%;
+            max-width: 420px;
+            margin: 0 auto;
+            padding: 15px;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+            box-sizing: border-box;
+        }
+
+        .prompt-card {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            background: #fdf2e9;
+            padding: 12px;
+            border-radius: 10px;
+            border: 2px solid #f5cba7;
+        }
+        .prompt-card span { color: #e67e22; font-size: 28px; }
+
+        .soroban-frame {
+            display: inline-flex;
+            justify-content: center;
+            background: #4a2e1b; 
+            padding: 12px 15px;
+            border-radius: 12px;
+            border: 5px solid #331f12;
+            position: relative;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            width: auto;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .soroban-beam {
+            position: absolute;
+            top: 75px;
+            left: 0;
+            right: 0;
+            height: 12px;
+            background: #111;
+            z-index: 10;
+        }
+        .soroban-rod {
+            width: 68px; 
+            height: 275px;
+            margin: 0 4px;
+            position: relative;
+            background: linear-gradient(90deg, transparent 32px, #bbb 32px, #bbb 36px, transparent 36px);
+        }
+        .bead {
+            width: 64px;
+            height: 26px;
+            position: absolute;
+            left: 2px;
+            cursor: pointer;
+            border-radius: 14px / 7px;
+            box-shadow: inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.2);
+            transition: top 0.12s ease-out;
+            -webkit-tap-highlight-color: transparent; 
+        }
+        .bead.heaven { background: #f1c40f; } 
+        .bead.earth { background: #e67e22; }  
+
+        .output-msg {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 15px;
+            min-height: 26px;
+            padding: 0 5px;
+        }
+        .success-text { color: #27ae60; }
+        .error-text { color: #c0392b; }
+
+        .btn-panel { 
+            margin-top: 15px; 
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .action-btn {
+            width: 100%;
+            padding: 14px 0;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn-verify { background: #2ecc71; color: white; }
+        .btn-forward { background: #3498db; color: white; }
+    </style>
+</head>
+<body>
+
+    <h1>🧮 Cabaran Nilai Soroban</h1>
+    <div class="desc">Gerakkan kumpulan manik dengan menyentuh atau klik kedudukan nilai secara natural!</div>
+
+    <div class="tabs">
+        <button id="mode1" class="active" onclick="updateGameLevel(1)">1 Digit</button>
+        <button id="mode2" onclick="updateGameLevel(2)">2 Digit</button>
+        <button id="mode3" onclick="updateGameLevel(3)">3 Digit</button>
+    </div>
+
+    <div class="board-wrapper">
+        <div class="prompt-card">Sila Bina Nombor: <span id="target-placeholder">...</span></div>
+        
+        <div class="soroban-frame">
+            <div class="soroban-beam"></div>
+            <div id="rods-layout-box" style="display: flex;"></div>
+        </div>
+
+        <div class="output-msg" id="display-feedback"></div>
+
+        <div class="btn-panel">
+            <button class="action-btn btn-verify" onclick="evaluateAbacusMatches()">Semak Jawapan Semasa</button>
+            <button class="action-btn btn-forward" onclick="initializeMatchScenario()">Soalan Seterusnya</button>
+        </div>
+    </div>
+
+    <script>
+        let currentModeDigits = 1;
+        let objectiveValue = 0;
+        let columnStateMap = [];
+
+        function updateGameLevel(digits) {
+            currentModeDigits = digits;
+            document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+            document.getElementById(`mode${digits}`).classList.add('active');
+            initializeMatchScenario();
+        }
+
+        function initializeMatchScenario() {
+            document.getElementById('display-feedback').innerText = "";
+            
+            let boundaryMin = currentModeDigits === 1 ? 1 : Math.pow(10, currentModeDigits - 1);
+            let boundaryMax = Math.pow(10, currentModeDigits) - 1;
+            objectiveValue = Math.floor(Math.random() * (boundaryMax - boundaryMin + 1)) + boundaryMin;
+            
+            document.getElementById('target-placeholder').innerText = objectiveValue;
+
+            columnStateMap = [];
+            for (let i = 0; i < currentModeDigits; i++) {
+                columnStateMap.push({ heavenActive: 0, earthCountActive: 0 });
+            }
+
+            refreshSorobanDisplay();
+        }
+
+        function refreshSorobanDisplay() {
+            const containerBox = document.getElementById('rods-layout-box');
+            if(!containerBox) return; // Prevent executing before element renders
+            containerBox.innerHTML = "";
+
+            for (let r = 0; r < currentModeDigits; r++) {
+                const rodElement = document.createElement('div');
+                rodElement.className = 'soroban-rod';
+
+                // --- HEAVEN BEAD (Value 5) ---
+                const upperBeadInstance = document.createElement('div');
+                upperBeadInstance.className = 'bead heaven';
+                upperBeadInstance.style.top = columnStateMap[r].heavenActive === 1 ? '44px' : '5px';
+                upperBeadInstance.onclick = () => {
+                    columnStateMap[r].heavenActive = columnStateMap[r].heavenActive === 1 ? 0 : 1;
+                    refreshSorobanDisplay();
+                };
+                rodElement.appendChild(upperBeadInstance);
+
+                // --- 4 EARTH BEADS (Value 1 each) ---
+                let currentStackSize = columnStateMap[r].earthCountActive;
+                
+                for (let b = 0; b < 4; b++) {
+                    const lowerBeadInstance = document.createElement('div');
+                    lowerBeadInstance.className = 'bead earth';
+                    
+                    if (b < currentStackSize) {
+                        lowerBeadInstance.style.top = `${92 + (b * 26)}px`; 
+                    } else {
+                        lowerBeadInstance.style.top = `${164 + (b * 26)}px`; 
+                    }
+
+                    lowerBeadInstance.onclick = () => {
+                        let associatedTargetIndex = b + 1;
+                        if (currentStackSize === associatedTargetIndex) {
+                            columnStateMap[r].earthCountActive = associatedTargetIndex - 1; 
+                        } else {
+                            columnStateMap[r].earthCountActive = associatedTargetIndex; 
+                        }
+                        refreshSorobanDisplay();
+                    };
+
+                    rodElement.appendChild(lowerBeadInstance);
+                }
+
+                containerBox.appendChild(rodElement);
+            }
+        }
+
+        function evaluateAbacusMatches() {
+            let userAggregatedSum = 0;
+
+            for (let r = 0; r < currentModeDigits; r++) {
+                let positionalSubtotal = 0;
+                if (columnStateMap[r].heavenActive === 1) positionalSubtotal += 5;
+                positionalSubtotal += columnStateMap[r].earthCountActive;
+
+                let powerWeight = currentModeDigits - 1 - r;
+                userAggregatedSum += positionalSubtotal * Math.pow(10, powerWeight);
+            }
+
+            const feedbackWindow = document.getElementById('display-feedback');
+            if (userAggregatedSum === objectiveValue) {
+                feedbackWindow.className = "output-msg success-text";
+                feedbackWindow.innerHTML = "🎉 Betul! Syabas! Kedudukan manik tepat.";
+            } else {
+                feedbackWindow.className = "output-msg error-text";
+                feedbackWindow.innerHTML = "❌ Nilai manik belum tepat. Sila cuba lagi.";
+            }
+        }
+
+// Failsafe execution triggers game generation structural loop instantly
+if (document.readyState === "loading") {
+document.addEventListener("DOMContentLoaded", initializeMatchScenario);
+} else {
+initializeMatchScenario();
+}
+</script>
