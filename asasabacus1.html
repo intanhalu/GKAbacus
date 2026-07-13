@@ -192,7 +192,7 @@
     </div>
 
     <script>
-        let currentModeDigits = 1;
+         let currentModeDigits = 1;
         let objectiveValue = 0;
         let columnStateMap = [];
 
@@ -231,10 +231,7 @@
                 // --- HEAVEN BEAD (Value 5) ---
                 const upperBeadInstance = document.createElement('div');
                 upperBeadInstance.className = 'bead heaven';
-                // Adjusted heights slightly to fit the mobile layout proportions
-                upperBeadInstance.style.top = columnStateMap[r].heavenActive === 1 ? '38px' : '4px';
-                
-                // Uses standard click which maps instantly on mobile due to touch-action settings
+                upperBeadInstance.style.top = columnStateMap[r].heavenActive === 1 ? '44px' : '5px';
                 upperBeadInstance.onclick = () => {
                     columnStateMap[r].heavenActive = columnStateMap[r].heavenActive === 1 ? 0 : 1;
                     refreshSorobanDisplay();
@@ -248,11 +245,10 @@
                     const lowerBeadInstance = document.createElement('div');
                     lowerBeadInstance.className = 'bead earth';
                     
-                    // Mobile stacking calculations (24px height per bead)
                     if (b < currentStackSize) {
-                        lowerBeadInstance.style.top = `${78 + (b * 24)}px`; // Slid UP against the beam
+                        lowerBeadInstance.style.top = `${92 + (b * 26)}px`; 
                     } else {
-                        lowerBeadInstance.style.top = `${138 + (b * 24)}px`; // Slid DOWN to the floor
+                        lowerBeadInstance.style.top = `${164 + (b * 26)}px`; 
                     }
 
                     lowerBeadInstance.onclick = () => {
