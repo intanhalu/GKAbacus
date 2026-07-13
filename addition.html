@@ -1,173 +1,531 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <title>Addition Practice with Soroban</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
-    h1 { margin-top: 20px; }
-    #question { font-size: 24px; margin: 20px; }
-    select, button { padding: 10px 20px; margin: 10px; font-size: 16px; }
-    .soroban {
-      display: flex; justify-content: center; margin: 20px;
-      background: #8b5a2b; padding: 20px; border-radius: 10px;
-    }
-    .rod {
-      position: relative;
-      width: 60px; height: 260px;
-      margin: 10px; background: #d2b48c; border-radius: 5px;
-    }
-    .divider {
-      position: absolute; top: 100px; width: 100%; height: 6px; background: #000;
-    }
-    .bead {
-      position: absolute; left: 50%; transform: translateX(-50%);
-      width: 40px; height: 22px; border-radius: 11px;
-      background: #c19a6b; cursor: pointer;
-      box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-      transition: top 0.15s;
-    }
-    .label {
-      position: absolute; bottom: -25px; width: 100%; text-align: center;
-      font-weight: bold; color: #fff;
-    }
-  </style>
+<meta charset="UTF-8">
+<title>Latihan Abacus (Tambah)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#fffdf5;
+    --red:#e63946;
+    --red-dark:#c1121f;
+    --blue:#1d63d1;
+    --blue-dark:#134a9e;
+    --yellow:#ffc300;
+    --green:#2ea043;
+    --purple:#7b2cbf;
+    --orange:#ff7f11;
+    --ink:#22223b;
+    --good:#1fa35c;
+    --bad:#e0455a;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:'Nunito',Arial,sans-serif;
+    text-align:center;
+    background:var(--bg);
+    color:var(--ink);
+    margin:0;
+    padding:20px 10px 60px;
+  }
+  h1{
+    margin:16px 0 4px;
+    font-family:'Baloo 2', sans-serif;
+    font-weight:800;
+    font-size:34px;
+    letter-spacing:0.5px;
+    color:var(--red);
+  }
+  .subtitle{color:var(--blue-dark); font-size:14px; margin-bottom:18px; font-weight:600;}
+
+  .controls{margin:10px 0;}
+  select, button{
+    padding:10px 18px;
+    margin:6px;
+    font-size:15px;
+    font-family:'Nunito',sans-serif;
+    font-weight:700;
+    border-radius:999px;
+    border:none;
+    cursor:pointer;
+  }
+  select{
+    background:#fff;
+    color:var(--ink);
+    border:2px solid var(--blue);
+  }
+  button{
+    background:var(--blue);
+    color:#fff;
+    box-shadow:0 4px 0 var(--blue-dark);
+    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
+  }
+  button:hover{ transform:translateY(-2px); box-shadow:0 6px 0 var(--blue-dark); background:#2a72e0; }
+  button:active{ transform:translateY(1px); box-shadow:0 2px 0 var(--blue-dark); }
+  button.secondary{
+    background:#fff;
+    color:var(--red);
+    border:2px solid var(--red);
+    box-shadow:0 4px 0 rgba(230,57,70,0.3);
+  }
+  button.secondary:hover{ background:#fff0f0; }
+
+  #question{font-size:28px; margin:14px; font-weight:800; font-family:'Baloo 2',sans-serif; color:var(--purple);}
+  #startInfo{font-size:15px; color:var(--blue-dark); margin:4px 0 14px; font-weight:600;}
+  #digits{font-size:18px; margin:8px; color:var(--purple); font-weight:700;}
+  #feedback{font-size:20px; margin:10px; font-weight:bold; min-height:28px;}
+
+  .soroban{
+    display:inline-flex;
+    justify-content:center;
+    margin:20px auto 40px;
+    background:var(--blue);
+    padding:26px 22px 44px;
+    border-radius:22px;
+    box-shadow:0 10px 0 var(--blue-dark), 0 14px 26px rgba(29,99,209,0.35);
+    border:4px solid #fff;
+  }
+  .rod{
+    position:relative;
+    width:56px; height:260px;
+    margin:0 10px;
+    border-radius:10px;
+    box-shadow:inset 0 0 8px rgba(0,0,0,0.2), 0 3px 0 rgba(0,0,0,0.15);
+  }
+  .rod:nth-child(5n+1){ background:var(--purple); }
+  .rod:nth-child(5n+2){ background:var(--yellow); }
+  .rod:nth-child(5n+3){ background:var(--green); }
+  .rod:nth-child(5n+4){ background:var(--purple); }
+  .rod:nth-child(5n+5){ background:var(--orange); }
+  .divider{
+    position:absolute; top:100px; width:100%; height:6px;
+    background:#22223b;
+    border-radius:3px;
+  }
+  .bead{
+    position:absolute; left:50%; transform:translateX(-50%);
+    width:42px; height:22px; border-radius:50%;
+    cursor:pointer;
+    transition:top .15s ease, box-shadow .2s, background .2s, transform .1s;
+  }
+  .bead:hover{ transform:translateX(-50%) scale(1.06); }
+  .bead.heaven{
+    background:#fff;
+    box-shadow:inset -3px -3px 5px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.15);
+  }
+  .bead.heaven.active{
+    background:var(--red);
+    box-shadow:0 0 10px 4px rgba(230,57,70,0.6), inset -3px -3px 5px rgba(0,0,0,0.25);
+  }
+  .bead.earth{
+    background:#fff;
+    box-shadow:inset -3px -3px 5px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.15);
+  }
+  .bead.earth.active{
+    background:var(--blue);
+    box-shadow:0 0 10px 4px rgba(29,99,209,0.6), inset -3px -3px 5px rgba(0,0,0,0.25);
+  }
+  .label{
+    position:absolute; bottom:-26px; width:100%; text-align:center;
+    font-weight:800; color:#fff; font-size:12px;
+    font-family:'Baloo 2',sans-serif;
+    text-shadow:0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  /* ---------- Celebration popup ---------- */
+  #celebrateOverlay{
+    position:fixed; inset:0; background:rgba(60,20,90,0.5);
+    display:none; align-items:center; justify-content:center;
+    z-index:999; overflow:hidden;
+  }
+  #celebrateOverlay.show{display:flex;}
+  .confetti{
+    position:absolute; top:-40px;
+    animation-name:fall;
+    animation-timing-function:ease-in;
+    animation-fill-mode:forwards;
+    pointer-events:none;
+    z-index:1;
+  }
+  @keyframes fall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(110vh) rotate(360deg); opacity:0.9; }
+  }
+  .celebrate-card{
+    position:relative; z-index:2;
+    background:#fff; border-radius:20px; padding:32px 44px;
+    text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    animation:pop .25s ease-out;
+    border:4px solid var(--red);
+  }
+  @keyframes pop{
+    0%{ transform:scale(0.7); opacity:0; }
+    100%{ transform:scale(1); opacity:1; }
+  }
+  .celebrate-msg{
+    font-size:30px; font-weight:800; font-family:'Baloo 2',sans-serif; color:var(--good); margin-bottom:8px;
+  }
+  .celebrate-sub{ font-size:14px; color:var(--blue-dark); margin-bottom:18px; font-weight:700; }
+  .celebrate-card button{ padding:10px 24px; font-size:15px; }
+
+  .panel{
+    max-width:520px; margin:0 auto 20px;
+    background:#fff; border:2px solid var(--purple);
+    border-radius:14px; padding:14px 18px; text-align:left;
+    box-shadow:0 4px 14px rgba(123,44,191,0.15);
+    display:none;
+  }
+  .panel.show{display:block;}
+  .panel h3{margin-top:0; color:var(--purple); font-family:'Baloo 2',sans-serif;}
+  .step{margin:8px 0; padding-bottom:8px; border-bottom:1px dashed var(--purple); font-size:14px;}
+  .step:last-child{border-bottom:none;}
+  .step b{color:var(--purple);}
+  .tag{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px;
+    border-radius:999px; margin-right:6px; color:#fff;
+  }
+  .tag.direct{background:var(--green);}
+  .tag.small{background:var(--orange);}
+  .tag.big{background:var(--red);}
+  .tag.none{background:#8a8a99;}
+  .tag.carry{background:var(--purple);}
+
+  a.home{display:inline-block; margin-top:10px; color:var(--blue); font-weight:700;}
+</style>
 </head>
 <body>
-  <h1>➕ Addition Practice with Soroban</h1>
+  <h1>🧮 Latihan Abacus Tambah</h1>
+  <div class="subtitle">Gerakkan biji abakus yang warna-warni untuk bina jawapan setiap soalan tambah!</div>
 
-  <label for="level">Choose Level:</label>
-  <select id="level" onchange="newQuestion()">
-    <option value="1">Beginner (1 Digit)</option>
-    <option value="2">Intermediate (2 Digit)</option>
-    <option value="3">Advanced (3 Digit)</option>
-  </select>
+  <div class="controls">
+    <label for="level">Pilih Level:</label>
+    <select id="level" onchange="newQuestion()">
+      <option value="1">Beginner (1 Digit)</option>
+      <option value="2">Intermediate (2 Digit)</option>
+      <option value="3">Advanced (3 Digit)</option>
+    </select>
+    <button onclick="newQuestion()">Soalan Baharu</button>
+    <button class="secondary" onclick="toggleHint()">Tunjuk / Sembunyi Teknik</button>
+  </div>
 
   <div id="question"></div>
-  <button onclick="checkAnswer()">Check Answer</button>
-  <button onclick="newQuestion()">New Question</button>
-  <br><br>
-  <a href="index.html">🏠 Back to Home</a>
+  <div id="startInfo"></div>
 
   <div class="soroban" id="soroban"></div>
 
-  <script>
-    const soroban = document.getElementById('soroban');
-    const labels = ["Ten-Thousands","Thousands","Hundreds","Tens","Ones"];
-    let currentAnswer = 0;
+  <div id="digits"></div>
+  <div id="feedback"></div>
 
-    buildSoroban();
+  <div id="celebrateOverlay">
+    <div class="celebrate-card">
+      <div class="celebrate-msg">✅ Betul! 🎉 Syabas!</div>
+      <div class="celebrate-sub" id="celebrateSub"></div>
+      <button onclick="closeCelebrate()">Soalan Seterusnya</button>
+    </div>
+  </div>
 
-    function buildSoroban() {
-      soroban.innerHTML = "";
-      for (let r = labels.length-1; r>=0; r--) {
-        let rod = document.createElement('div');
-        rod.className = 'rod';
-        rod.dataset.place = r;
+  <div class="panel" id="hintPanel">
+    <h3>Teknik Penambahan (Kawan Kecil &amp; Kawan Besar)</h3>
+    <div id="hintSteps"></div>
+  </div>
 
-        let divider = document.createElement('div');
-        divider.className = 'divider';
-        rod.appendChild(divider);
+  <a class="home" href="index.html">🏠 Back to Home</a>
 
-        // Heaven bead
-        let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
-        rod.appendChild(heaven);
+<script>
+// ---------- Layout constants (must match CSS bead/rod sizes) ----------
+const BEAD_H = 22;
+const EARTH_TOP = 110;     // just below the divider
+const EARTH_BOTTOM = 248;  // bottom usable edge of the rod
+const HEAVEN_INACTIVE_TOP = 14;
+const HEAVEN_ACTIVE_TOP = 78; // touching the divider from above
 
-        // Earth beads
-        let earthPositions = [140,170,200,230];
-        earthPositions.forEach((pos, idx)=>{
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth");
-          earth.dataset.index = idx;
-          rod.appendChild(earth);
-        });
+const LABELS = ["Sa","Sepuluh","Seratus","Seribu","Sepuluh Ribu"]; // index = place value (0 = ones)
 
-        let label = document.createElement('div');
-        label.className = 'label';
-        label.textContent = labels[labels.length-1-r];
-        rod.appendChild(label);
+const sorobanEl = document.getElementById('soroban');
+let rodsByPlace = [];   // DOM element per place value
+let rodCount = 2;
+let currentA = 0, currentB = 0, targetSum = 0;
 
-        soroban.appendChild(rod);
-      }
+// ---------- Building the soroban ----------
+function buildSoroban(n){
+  rodCount = n;
+  sorobanEl.innerHTML = "";
+  rodsByPlace = [];
+  for (let r = n - 1; r >= 0; r--) {
+    const rod = document.createElement('div');
+    rod.className = 'rod';
+    rod.dataset.place = r;
+
+    const divider = document.createElement('div');
+    divider.className = 'divider';
+    rod.appendChild(divider);
+
+    const heaven = document.createElement('div');
+    heaven.className = 'bead heaven';
+    heaven.style.top = HEAVEN_INACTIVE_TOP + 'px';
+    heaven.dataset.active = 'false';
+    heaven.addEventListener('click', () => onHeavenClick(rod));
+    rod.appendChild(heaven);
+
+    for (let idx = 0; idx < 4; idx++) {
+      const earth = document.createElement('div');
+      earth.className = 'bead earth';
+      earth.dataset.index = idx;
+      earth.dataset.active = 'false';
+      earth.style.top = earthTopFor(idx, 0) + 'px';
+      earth.addEventListener('click', () => onEarthClick(rod, idx));
+      rod.appendChild(earth);
     }
 
-    function createBead(initialTop,value,type){
-      let bead=document.createElement('div');
-      bead.className='bead '+type;
-      bead.style.top=initialTop+"px";
-      bead.dataset.value=value;
-      bead.dataset.initialTop=initialTop;
-      bead.dataset.active="false";
-      bead.addEventListener('click',()=>toggleBead(bead));
-      return bead;
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = LABELS[r];
+    rod.appendChild(label);
+
+    sorobanEl.appendChild(rod);
+    rodsByPlace[r] = rod;
+  }
+}
+
+function earthTopFor(idx, activeCount) {
+  if (idx < activeCount) {
+    // packed against the beam, in order idx 0..count-1
+    return EARTH_TOP + idx * BEAD_H;
+  }
+  // packed against the bottom of the rod, farthest bead first
+  const rankFromBottom = 3 - idx;
+  return EARTH_BOTTOM - BEAD_H - rankFromBottom * BEAD_H;
+}
+
+// ---------- Reading / writing rod state ----------
+function getEarthCount(rod){
+  let count = 0;
+  rod.querySelectorAll('.earth').forEach(b => { if (b.dataset.active === 'true') count++; });
+  return count;
+}
+
+function setEarthCount(rod, newCount){
+  newCount = Math.max(0, Math.min(4, newCount));
+  rod.querySelectorAll('.earth').forEach(b => {
+    const idx = parseInt(b.dataset.index);
+    const active = idx < newCount;
+    b.dataset.active = active ? 'true' : 'false';
+    b.style.top = earthTopFor(idx, newCount) + 'px';
+    b.classList.toggle('active', active);
+  });
+}
+
+function setHeaven(rod, active){
+  const h = rod.querySelector('.heaven');
+  h.dataset.active = active ? 'true' : 'false';
+  h.style.top = (active ? HEAVEN_ACTIVE_TOP : HEAVEN_INACTIVE_TOP) + 'px';
+  h.classList.toggle('active', active);
+}
+
+function getRodDigit(rod){
+  const heavenActive = rod.querySelector('.heaven').dataset.active === 'true';
+  return (heavenActive ? 5 : 0) + getEarthCount(rod);
+}
+
+function setRodDigit(rod, digit){
+  setHeaven(rod, digit >= 5);
+  setEarthCount(rod, digit % 5);
+}
+
+function setSorobanNumber(num){
+  for (let r = 0; r < rodCount; r++) {
+    const digit = Math.floor(num / Math.pow(10, r)) % 10;
+    setRodDigit(rodsByPlace[r], digit);
+  }
+}
+
+function getSorobanValue(){
+  let total = 0;
+  for (let r = 0; r < rodCount; r++) {
+    total += getRodDigit(rodsByPlace[r]) * Math.pow(10, r);
+  }
+  return total;
+}
+
+// ---------- Click handlers (real push-bead interaction) ----------
+function onHeavenClick(rod){
+  const active = rod.querySelector('.heaven').dataset.active === 'true';
+  setHeaven(rod, !active);
+  afterMove();
+}
+
+function onEarthClick(rod, idx){
+  const count = getEarthCount(rod);
+  const newCount = (idx < count) ? idx : idx + 1;
+  setEarthCount(rod, newCount);
+  afterMove();
+}
+
+function afterMove(){
+  updateDigits();
+  autoCheckAnswer();
+}
+
+function updateDigits(){
+  document.getElementById('digits').textContent = "Nilai semasa pada abakus: " + getSorobanValue();
+}
+
+let celebrated = false;
+
+function autoCheckAnswer(){
+  const value = getSorobanValue();
+  const fb = document.getElementById('feedback');
+  if (value === targetSum) {
+    fb.textContent = "";
+    if (!celebrated) {
+      celebrated = true;
+      celebrate();
     }
+  } else {
+    fb.textContent = "";
+  }
+}
 
-    function toggleBead(bead){
-      if(bead.classList.contains("heaven")){
-        bead.dataset.active = (bead.dataset.active==="true")?"false":"true";
-        bead.style.top = (bead.dataset.active==="true")?80:bead.dataset.initialTop+"px";
-      } else {
-        let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
-        let idx = parseInt(bead.dataset.index);
-        if(bead.dataset.active==="true"){
-          bead.dataset.active="false";
-          bead.style.top=bead.dataset.initialTop+"px";
-        } else {
-          if(idx===0 || siblings[idx-1].dataset.active==="true"){
-            bead.dataset.active="true";
-            bead.style.top=(idx===0)?110:siblings[idx-1].dataset.initialTop+"px";
-          }
-        }
-      }
+function celebrate(){
+  const overlay = document.getElementById('celebrateOverlay');
+
+  // clear any leftover confetti pieces from a previous round
+  overlay.querySelectorAll('.confetti').forEach(el => el.remove());
+
+  const candies = ['🍬','🍭','🍫','🍡','✨','⭐','🎉'];
+  const colors = ['#e8b34a','#4f9ddb','#e8607a','#7bc47f','#c19af6','#ffd166'];
+  const pieceCount = 45;
+
+  for (let i = 0; i < pieceCount; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti';
+    const useEmoji = Math.random() < 0.6;
+    if (useEmoji) {
+      piece.textContent = candies[Math.floor(Math.random() * candies.length)];
+      piece.style.fontSize = (16 + Math.random() * 18) + 'px';
+    } else {
+      piece.style.width = piece.style.height = (8 + Math.random() * 8) + 'px';
+      piece.style.borderRadius = '50%';
+      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
     }
+    piece.style.left = Math.random() * 100 + '%';
+    piece.style.animationDelay = (Math.random() * 0.6) + 's';
+    piece.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
+    overlay.appendChild(piece);
+  }
 
-    function getSorobanValue(){
-      let total=0;
-      document.querySelectorAll('.rod').forEach(rod=>{
-        rod.querySelectorAll('.bead').forEach(b=>{
-          if(b.dataset.active==="true"){
-            total+=parseInt(b.dataset.value);
-          }
-        });
-      });
-      return total;
-    }
+  document.getElementById('celebrateSub').textContent =
+    `${currentA} + ${currentB} = ${targetSum}`;
 
-    function newQuestion() {
-      let level = document.getElementById('level').value;
-      let a, b;
+  overlay.classList.add('show');
+}
 
-      if (level === "1") {
-        a = Math.floor(Math.random() * 9) + 1;
-        b = Math.floor(Math.random() * 9) + 1;
-      } else if (level === "2") {
-        a = Math.floor(Math.random() * 90) + 10;
-        b = Math.floor(Math.random() * 90) + 10;
-      } else {
-        a = Math.floor(Math.random() * 900) + 100;
-        b = Math.floor(Math.random() * 900) + 100;
-      }
+function closeCelebrate(){
+  document.getElementById('celebrateOverlay').classList.remove('show');
+  newQuestion();
+}
 
-      currentAnswer = a + b;
-      document.getElementById('question').textContent = `${a} + ${b} = ?`;
+// ---------- Question generation ----------
+function levelConfig(level){
+  if (level === "1") return { min:1, max:9, rods:2 };
+  if (level === "2") return { min:10, max:99, rods:3 };
+  return { min:100, max:999, rods:4 };
+}
 
-      // Reset soroban
-      document.querySelectorAll('.bead').forEach(b=>{
-        b.dataset.active="false";
-        b.style.top=b.dataset.initialTop+"px";
-      });
-    }
+function newQuestion(){
+  const level = document.getElementById('level').value;
+  const cfg = levelConfig(level);
 
-    function checkAnswer() {
-      let sorobanValue = getSorobanValue();
-      if (sorobanValue === currentAnswer) {
-        alert("✅ Correct! 🎉 Well done!");
-      } else {
-        alert("❌ Incorrect. The correct answer is " + currentAnswer);
-      }
-    }
+  const a = Math.floor(Math.random() * (cfg.max - cfg.min + 1)) + cfg.min;
+  const b = Math.floor(Math.random() * (cfg.max - cfg.min + 1)) + cfg.min;
 
-    // First question on load
-    newQuestion();
-  </script>
+  currentA = a;
+  currentB = b;
+  targetSum = a + b;
+
+  buildSoroban(cfg.rods);
+  celebrated = false;
+
+  document.getElementById('question').textContent = `${a} + ${b} = ?`;
+  document.getElementById('startInfo').textContent =
+    `Gerakkan biji abakus untuk mewakili jawapan bagi ${a} + ${b}.`;
+  document.getElementById('feedback').textContent = "";
+  updateDigits();
+
+  renderHint(a, b, cfg.rods);
+}
+
+// ---------- Technique hints: direct / small friend / big friend ----------
+function decompose(num, n){
+  const arr = [];
+  for (let r = 0; r < n; r++) arr.push(Math.floor(num / Math.pow(10, r)) % 10);
+  return arr;
+}
+
+// Determine how to add digit x onto current rod digit d using real soroban bead rules.
+function addDigitToRod(d, x){
+  if (x === 0) {
+    return { method:'none', tag:'Tiada', result:d, carry:0,
+      explain:'Tiada apa perlu ditambah pada tempat ini.' };
+  }
+  if (x === 10) {
+    return { method:'carry', tag:'Bawa 1', result:d, carry:1,
+      explain:'Bawa 1 terus ke tempat seterusnya; nilai di tempat ini tidak berubah.' };
+  }
+  const sum = d + x;
+  const earthD = d % 5, heavenD = d >= 5 ? 1 : 0;
+  const earthX = x % 5, heavenX = x >= 5 ? 1 : 0;
+
+  if (sum <= 9 && earthD + earthX <= 4 && heavenD + heavenX <= 1) {
+    return { method:'direct', tag:'Terus', result:sum, carry:0,
+      explain:`Tambah terus ${x} biji (tiada biji lain diperlukan).` };
+  }
+  if (sum <= 9) {
+    const comp = 5 - x;
+    return { method:'small', tag:'Kawan Kecil', result:sum, carry:0,
+      explain:`Guna Kawan Kecil untuk +${x}: naikkan biji syurga (+5), turunkan ${comp} biji bumi (−${comp}).` };
+  }
+  const result = sum - 10;
+  const comp10 = 10 - x;
+  return { method:'big', tag:'Kawan Besar', result:result, carry:1,
+    explain:`Guna Kawan Besar untuk +${x}: bawa 1 ke tempat seterusnya (+10), turunkan ${comp10} pada tempat ini (−${comp10}).` };
+}
+
+function renderHint(a, b, n){
+  const digitsA = decompose(a, n);
+  const digitsB = decompose(b, n);
+  let carry = 0;
+  const stepsHtml = [];
+
+  for (let r = 0; r < n; r++) {
+    const d = digitsA[r];
+    const x = digitsB[r] + carry;
+    const step = addDigitToRod(d, x);
+    const cls = step.method === 'direct' ? 'direct'
+              : step.method === 'small' ? 'small'
+              : step.method === 'big' ? 'big'
+              : step.method === 'carry' ? 'carry' : 'none';
+
+    stepsHtml.push(
+      `<div class="step"><span class="tag ${cls}">${step.tag}</span>` +
+      `<b>${LABELS[r]}:</b> ${d} + ${digitsB[r]}${carry ? ' (+ bawa 1)' : ''} → ${step.explain}</div>`
+    );
+    carry = step.carry;
+  }
+  if (carry) {
+    stepsHtml.push(`<div class="step"><span class="tag carry">Bawa 1</span> Tempat baharu dicipta dengan nilai 1.</div>`);
+  }
+
+  document.getElementById('hintSteps').innerHTML = stepsHtml.join('');
+}
+
+function toggleHint(){
+  document.getElementById('hintPanel').classList.toggle('show');
+}
+
+// ---------- Init ----------
+newQuestion();
+</script>
 </body>
 </html>
