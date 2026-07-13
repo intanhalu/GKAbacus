@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Kids Abacus Quiz - Levels</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background-color: #fef6e4;
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        color: #ff6b6b;
+    }
+    #level, #score {
+        font-size: 20px;
+        margin: 5px;
+    }
+    #abacus {
+        margin: 20px auto;
+        display: grid;
+        grid-template-columns: repeat(10, 60px);
+        grid-gap: 5px;
+        justify-content: center;
+    }
+    .bead {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, #d4a373, #8b5e3c);
+        box-shadow: inset -2px -2px 5px rgba(0,0,0,0.3);
+        margin: auto;
+    }
+    .empty {
+        background-color: transparent;
+        border: 2px dashed #ccc;
+    }
+    #choices {
+        margin-top: 20px;
+    }
+    .choice-btn {
+        background-color: #ffcc70;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        font-size: 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+    }
+    .choice-btn:hover {
+        background-color: #ffb347;
+    }
+    #feedback {
+        font-size: 24px;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body>
+
+<h1>Abacus Quiz for Kids</h1>
+<div id="level">Level: 1</div>
+<div id="score">Score: 0</div>
+<div id="abacus"></div>
+<div id="choices"></div>
+<div id="feedback"></div>
+
+<script>
+    let level = 1;
+    let score = 0;
+    let correctInLevel = 0;
+
+    function generateQuestion() {
+        let number;
+        if (level === 1) number = Math.floor(Math.random() * 5) + 1;
+        else if (level === 2) number = Math.floor(Math.random() * 5) + 6;
+        else number = Math.floor(Math.random() * 10) + 11;
+
+        renderAbacus(number);
+        renderChoices(number);
+    }
+
+    function renderAbacus(num) {
+        const abacusDiv = document.getElementById("abacus");
+        abacusDiv.innerHTML = "";
+
+        // For numbers > 10, show two rows
+        if (num <= 10) {
+            for (let i = 1; i <= 10; i++) {
+                const bead = document.createElement("div");
+                bead.className = i <= num ? "bead" : "empty";
+                abacusDiv.appendChild(bead);
+            }
+        } else {
+            let tens = Math.floor(num / 10);
+            let ones = num % 10;
+
+            // First row for tens
+            for (let i = 1; i <= 10; i++) {
+                const bead = document.createElement("div");
+                bead.className = i <= tens ? "bead" : "empty";
+                abacusDiv.appendChild(bead);
+            }
+            // Second row for ones
+            for (let i = 1; i <= 10; i++) {
+                const bead = document.createElement("div");
+                bead.className = i <= ones ? "bead" : "empty";
+                abacusDiv.appendChild(bead);
+            }
+        }
+    }
+
+    function renderChoices(correct) {
+        const choicesDiv = document.getElementById("choices");
+        choicesDiv.innerHTML = "";
+        let options = new Set([correct]);
+        while (options.size < 4) {
+            let min = level === 1 ? 1 : (level === 2 ? 6 : 11);
+            let max = level === 1 ? 5 : (level === 2 ? 10 : 20);
+            options.add(Math.floor(Math.random() * (max - min + 1)) + min);
+        }
+        options = Array.from(options).sort(() => Math.random() - 0.5);
+
+        options.forEach(num => {
+            const btn = document.createElement("button");
+            btn.textContent = num;
+            btn.className = "choice-btn";
+            btn.onclick = () => checkAnswer(num, correct);
+            choicesDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, correct) {
+        const feedback = document.getElementById("feedback");
+        if (selected === correct) {
+            feedback.style.color = "green";
+            feedback.textContent = "✅ Correct!";
+            score++;
+            correctInLevel++;
+            updateStats();
+
+            if (correctInLevel >= 5 && level < 3) {
+                level++;
+                correctInLevel = 0;
+                feedback.textContent += ` 🎉 Level Up to ${level}!`;
+            }
+            setTimeout(generateQuestion, 1200);
+        } else {
+            feedback.style.color = "red";
+            feedback.textContent = "❌ Try Again!";
+        }
+    }
+
+    function updateStats() {
+        document.getElementById("level").textContent = `Level: ${level}`;
+        document.getElementById("score").textContent = `Score: ${score}`;
+    }
+
+    // Start game
+    generateQuestion();
+</script>
+
+</body>
+</html>
