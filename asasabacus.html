@@ -1,531 +1,353 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-<meta charset="UTF-8">
-<title>Latihan Asas Abacus </title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<style>
-  :root{
-    --bg:#fffdf5;
-    --red:#e63946;
-    --red-dark:#c1121f;
-    --blue:#1d63d1;
-    --blue-dark:#134a9e;
-    --yellow:#ffc300;
-    --green:#2ea043;
-    --purple:#7b2cbf;
-    --orange:#ff7f11;
-    --ink:#22223b;
-    --good:#1fa35c;
-    --bad:#e0455a;
-  }
-  *{box-sizing:border-box;}
-  body{
-    font-family:'Nunito',Arial,sans-serif;
-    text-align:center;
-    background:var(--bg);
-    color:var(--ink);
-    margin:0;
-    padding:20px 10px 60px;
-  }
-  h1{
-    margin:16px 0 4px;
-    font-family:'Baloo 2', sans-serif;
-    font-weight:800;
-    font-size:34px;
-    letter-spacing:0.5px;
-    color:var(--red);
-  }
-  .subtitle{color:var(--blue-dark); font-size:14px; margin-bottom:18px; font-weight:600;}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cabaran Bina Nombor Abakus</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 { color: #2c3e50; margin-bottom: 5px; }
+        .controls { margin-bottom: 20px; }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            font-weight: bold;
+        }
+        .btn-active { background-color: #3498db; color: white; border-color: #2980b9; }
+        
+        /* Stats Dashboard Bar */
+        .dashboard {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: #ffffff;
+            padding: 10px 25px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            border: 2px solid #34495e;
+        }
+        #timer-card.warning {
+            background: #ff7675;
+            color: white;
+            animation: blink 1s infinite;
+        }
+        
+        .game-panel {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            display: inline-block;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .target-box { font-size: 26px; font-weight: bold; margin-bottom: 15px; color: #e67e22; }
+        .current-box { font-size: 18px; margin-top: 15px; color: #7f8c8d; }
+        
+        /* Abacus Styling */
+        .abacus {
+            display: flex;
+            justify-content: center;
+            background: #8e44ad;
+            padding: 15px;
+            border-radius: 8px;
+            border: 8px solid #5e2775;
+            position: relative;
+        }
+        .beam {
+            position: absolute;
+            top: 75px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: #2c3e50;
+            z-index: 5;
+        }
+        .rod {
+            width: 60px;
+            height: 240px;
+            margin: 0 10px;
+            position: relative;
+            background: linear-gradient(90deg, transparent 28px, #bdc3c7 28px, #bdc3c7 32px, transparent 32px);
+        }
+        .bead {
+            width: 50px;
+            height: 25px;
+            background: #e74c3c;
+            border-radius: 12px;
+            position: absolute;
+            left: 5px;
+            cursor: pointer;
+            transition: top 0.2s ease;
+            box-shadow: inset 0 -3px 5px rgba(0,0,0,0.3);
+        }
+        .bead.upper { background: #f1c40f; }
+        
+        .feedback { font-size: 22px; font-weight: bold; margin-top: 15px; min-height: 35px; }
+        .success { color: #27ae60; }
+        .error { color: #c0392b; }
 
-  .controls{margin:10px 0;}
-  select, button{
-    padding:10px 18px;
-    margin:6px;
-    font-size:15px;
-    font-family:'Nunito',sans-serif;
-    font-weight:700;
-    border-radius:999px;
-    border:none;
-    cursor:pointer;
-  }
-  select{
-    background:#fff;
-    color:var(--ink);
-    border:2px solid var(--blue);
-  }
-  button{
-    background:var(--blue);
-    color:#fff;
-    box-shadow:0 4px 0 var(--blue-dark);
-    transition:transform .12s ease, box-shadow .12s ease, background .12s ease;
-  }
-  button:hover{ transform:translateY(-2px); box-shadow:0 6px 0 var(--blue-dark); background:#2a72e0; }
-  button:active{ transform:translateY(1px); box-shadow:0 2px 0 var(--blue-dark); }
-  button.secondary{
-    background:#fff;
-    color:var(--red);
-    border:2px solid var(--red);
-    box-shadow:0 4px 0 rgba(230,57,70,0.3);
-  }
-  button.secondary:hover{ background:#fff0f0; }
-
-  #question{font-size:28px; margin:14px; font-weight:800; font-family:'Baloo 2',sans-serif; color:var(--purple);}
-  #startInfo{font-size:15px; color:var(--blue-dark); margin:4px 0 14px; font-weight:600;}
-  #digits{font-size:18px; margin:8px; color:var(--purple); font-weight:700;}
-  #feedback{font-size:20px; margin:10px; font-weight:bold; min-height:28px;}
-
-  .soroban{
-    display:inline-flex;
-    justify-content:center;
-    margin:20px auto 40px;
-    background:var(--blue);
-    padding:26px 22px 44px;
-    border-radius:22px;
-    box-shadow:0 10px 0 var(--blue-dark), 0 14px 26px rgba(29,99,209,0.35);
-    border:4px solid #fff;
-  }
-  .rod{
-    position:relative;
-    width:56px; height:260px;
-    margin:0 10px;
-    border-radius:10px;
-    box-shadow:inset 0 0 8px rgba(0,0,0,0.2), 0 3px 0 rgba(0,0,0,0.15);
-  }
-  .rod:nth-child(5n+1){ background:var(--red); }
-  .rod:nth-child(5n+2){ background:var(--yellow); }
-  .rod:nth-child(5n+3){ background:var(--green); }
-  .rod:nth-child(5n+4){ background:var(--purple); }
-  .rod:nth-child(5n+5){ background:var(--orange); }
-  .divider{
-    position:absolute; top:100px; width:100%; height:6px;
-    background:#22223b;
-    border-radius:3px;
-  }
-  .bead{
-    position:absolute; left:50%; transform:translateX(-50%);
-    width:42px; height:22px; border-radius:50%;
-    cursor:pointer;
-    transition:top .15s ease, box-shadow .2s, background .2s, transform .1s;
-  }
-  .bead:hover{ transform:translateX(-50%) scale(1.06); }
-  .bead.heaven{
-    background:#fff;
-    box-shadow:inset -3px -3px 5px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.15);
-  }
-  .bead.heaven.active{
-    background:var(--red);
-    box-shadow:0 0 10px 4px rgba(230,57,70,0.6), inset -3px -3px 5px rgba(0,0,0,0.25);
-  }
-  .bead.earth{
-    background:#fff;
-    box-shadow:inset -3px -3px 5px rgba(0,0,0,0.2), 0 2px 3px rgba(0,0,0,0.15);
-  }
-  .bead.earth.active{
-    background:var(--blue);
-    box-shadow:0 0 10px 4px rgba(29,99,209,0.6), inset -3px -3px 5px rgba(0,0,0,0.25);
-  }
-  .label{
-    position:absolute; bottom:-26px; width:100%; text-align:center;
-    font-weight:800; color:#fff; font-size:12px;
-    font-family:'Baloo 2',sans-serif;
-    text-shadow:0 1px 2px rgba(0,0,0,0.3);
-  }
-
-  /* ---------- Celebration popup ---------- */
-  #celebrateOverlay{
-    position:fixed; inset:0; background:rgba(60,20,90,0.5);
-    display:none; align-items:center; justify-content:center;
-    z-index:999; overflow:hidden;
-  }
-  #celebrateOverlay.show{display:flex;}
-  .confetti{
-    position:absolute; top:-40px;
-    animation-name:fall;
-    animation-timing-function:ease-in;
-    animation-fill-mode:forwards;
-    pointer-events:none;
-    z-index:1;
-  }
-  @keyframes fall{
-    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
-    100%{ transform:translateY(110vh) rotate(360deg); opacity:0.9; }
-  }
-  .celebrate-card{
-    position:relative; z-index:2;
-    background:#fff; border-radius:20px; padding:32px 44px;
-    text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.35);
-    animation:pop .25s ease-out;
-    border:4px solid var(--red);
-  }
-  @keyframes pop{
-    0%{ transform:scale(0.7); opacity:0; }
-    100%{ transform:scale(1); opacity:1; }
-  }
-  .celebrate-msg{
-    font-size:30px; font-weight:800; font-family:'Baloo 2',sans-serif; color:var(--good); margin-bottom:8px;
-  }
-  .celebrate-sub{ font-size:14px; color:var(--blue-dark); margin-bottom:18px; font-weight:700; }
-  .celebrate-card button{ padding:10px 24px; font-size:15px; }
-
-  .panel{
-    max-width:520px; margin:0 auto 20px;
-    background:#fff; border:2px solid var(--purple);
-    border-radius:14px; padding:14px 18px; text-align:left;
-    box-shadow:0 4px 14px rgba(123,44,191,0.15);
-    display:none;
-  }
-  .panel.show{display:block;}
-  .panel h3{margin-top:0; color:var(--purple); font-family:'Baloo 2',sans-serif;}
-  .step{margin:8px 0; padding-bottom:8px; border-bottom:1px dashed var(--purple); font-size:14px;}
-  .step:last-child{border-bottom:none;}
-  .step b{color:var(--purple);}
-  .tag{
-    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px;
-    border-radius:999px; margin-right:6px; color:#fff;
-  }
-  .tag.direct{background:var(--green);}
-  .tag.small{background:var(--orange);}
-  .tag.big{background:var(--red);}
-  .tag.none{background:#8a8a99;}
-  .tag.carry{background:var(--purple);}
-
-  a.home{display:inline-block; margin-top:10px; color:var(--blue); font-weight:700;}
-</style>
+        @keyframes blink {
+            50% { opacity: 0.6; }
+        }
+    </style>
 </head>
 <body>
-  <h1>🧮 Latihan Asas Abacus</h1>
-  <div class="subtitle">Gerakkan biji abakus yang warna-warni untuk bina jawapan setiap soalan tolak!</div>
 
-  <div class="controls">
-    <label for="level">Pilih Level:</label>
-    <select id="level" onchange="newQuestion()">
-      <option value="1">Beginner (1 Digit)</option>
-      <option value="2">Intermediate (2 Digit)</option>
-      <option value="3">Advanced (3 Digit)</option>
-    </select>
-    <button onclick="newQuestion()">Soalan Baharu</button>
-    <button class="secondary" onclick="toggleHint()">Tunjuk / Sembunyi Teknik</button>
-  </div>
+    <h1>🧮 Cabaran Bina Nombor Abakus</h1>
+    <p>Gerakkan biji abakus untuk membina nilai nombor sebelum masa tamat!</p>
 
-  <div id="question"></div>
-  <div id="startInfo"></div>
-
-  <div class="soroban" id="soroban"></div>
-
-  <div id="digits"></div>
-  <div id="feedback"></div>
-
-  <div id="celebrateOverlay">
-    <div class="celebrate-card">
-      <div class="celebrate-msg">✅ Betul! 🎉 Syabas!</div>
-      <div class="celebrate-sub" id="celebrateSub"></div>
-      <button onclick="closeCelebrate()">Soalan Seterusnya</button>
+    <div class="controls">
+        <button id="btn-1" class="btn-active" onclick="setLevel(1)">Beginner (1 Digit)</button>
+        <button id="btn-2" onclick="setLevel(2)">Intermediate (2 Digit)</button>
+        <button id="btn-3" onclick="setLevel(3)">Advanced (3 Digit)</button>
     </div>
-  </div>
 
-  <div class="panel" id="hintPanel">
-    <h3>Teknik Penolakan (Kawan Kecil &amp; Kawan Besar - Pinjam)</h3>
-    <div id="hintSteps"></div>
-  </div>
+    <!-- Dashboard showing Live Score and Remaining Time -->
+    <div class="dashboard">
+        <div class="stat-card" id="score-card">🏆 Markah: <span id="game-score">0</span></div>
+        <div class="stat-card" id="timer-card">⏱️ Masa: <span id="game-timer">30</span>s</div>
+    </div>
 
-  
-  <a class="home" href="index.html">🏠 Back to Home</a>
+    <div class="game-panel">
+        <div class="target-box">Bina Nombor: <span id="target-value">0</span></div>
+        
+        <div class="abacus" id="abacus-container">
+            <div class="beam"></div>
+        </div>
 
-<script>
-// ---------- Layout constants (must match CSS bead/rod sizes) ----------
-const BEAD_H = 22;
-const EARTH_TOP = 110;     // just below the divider
-const EARTH_BOTTOM = 248;  // bottom usable edge of the rod
-const HEAVEN_INACTIVE_TOP = 14;
-const HEAVEN_ACTIVE_TOP = 78; // touching the divider from above
+        <div class="current-box">Nilai Abakus Semasa: <span id="current-value">0</span></div>
+        <div class="feedback" id="feedback-message"></div>
+        
+        <button id="btn-submit" style="background: #2ecc71; color: white;" onclick="checkAnswer()">Sahkan Jawapan ✅</button>
+        <button id="btn-next" style="background: #95a5a6; color: white;" onclick="nextQuestion()">Soalan Seterusnya ➡️</button>
+    </div>
 
-const LABELS = ["Sa","Sepuluh","Seratus","Seribu","Sepuluh Ribu"]; // index = place value (0 = ones)
+    <script>
+        let currentLevel = 1;
+        let targetNumber = 0;
+        let abacusState = [];
+        
+        // Game features variables
+        let score = 0;
+        let timeLeft = 30;
+        let timerInterval = null;
+        let isGameOver = false;
 
-const sorobanEl = document.getElementById('soroban');
-let rodsByPlace = [];   // DOM element per place value
-let rodCount = 2;
-let currentA = 0, currentB = 0, targetSum = 0;
+        // Audio Helper Synthesizer (No files needed!)
+        function playSound(type) {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                
+                if (type === 'click') {
+                    // Quick wooden bead click sound
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(600, ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(150, ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                } else if (type === 'success') {
+                    // Happy ding ding sound
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, ctx.currentTime); // C5
+                    osc.frequency.setValueAtTime(659.25, ctx.currentTime + 0.1); // E5
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.3);
+                } else if (type === 'error') {
+                    // Low error buzz sound
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(130, ctx.currentTime); // Low buzz
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.25);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.25);
+                } else if (type === 'timeout') {
+                    // Game Over long alarm sound
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(220, ctx.currentTime);
+                    gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, ctx.currentTime + 0.8);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.8);
+                }
+            } catch (e) { console.log("Audio not supported yet."); }
+        }
 
-// ---------- Building the soroban ----------
-function buildSoroban(n){
-  rodCount = n;
-  sorobanEl.innerHTML = "";
-  rodsByPlace = [];
-  for (let r = n - 1; r >= 0; r--) {
-    const rod = document.createElement('div');
-    rod.className = 'rod';
-    rod.dataset.place = r;
+        function startTimer() {
+            clearInterval(timerInterval);
+            // Time sets according to difficulty level (30s, 45s, 60s)
+            timeLeft = currentLevel === 1 ? 30 : (currentLevel === 2 ? 45 : 60);
+            updateTimerDisplay();
 
-    const divider = document.createElement('div');
-    divider.className = 'divider';
-    rod.appendChild(divider);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
 
-    const heaven = document.createElement('div');
-    heaven.className = 'bead heaven';
-    heaven.style.top = HEAVEN_INACTIVE_TOP + 'px';
-    heaven.dataset.active = 'false';
-    heaven.addEventListener('click', () => onHeavenClick(rod));
-    rod.appendChild(heaven);
+                if (timeLeft <= 5) {
+                    document.getElementById('timer-card').classList.add('warning');
+                }
 
-    for (let idx = 0; idx < 4; idx++) {
-      const earth = document.createElement('div');
-      earth.className = 'bead earth';
-      earth.dataset.index = idx;
-      earth.dataset.active = 'false';
-      earth.style.top = earthTopFor(idx, 0) + 'px';
-      earth.addEventListener('click', () => onEarthClick(rod, idx));
-      rod.appendChild(earth);
-    }
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    triggerTimeout();
+                }
+            }, 1000);
+        }
 
-    const label = document.createElement('div');
-    label.className = 'label';
-    label.textContent = LABELS[r];
-    rod.appendChild(label);
+        function updateTimerDisplay() {
+            document.getElementById('game-timer').innerText = timeLeft;
+            if (timeLeft > 5) {
+                document.getElementById('timer-card').classList.remove('warning');
+            }
+        }
 
-    sorobanEl.appendChild(rod);
-    rodsByPlace[r] = rod;
-  }
-}
+        function triggerTimeout() {
+            isGameOver = true;
+            playSound('timeout');
+            document.getElementById('btn-submit').disabled = true;
+            const msgBox = document.getElementById('feedback-message');
+            msgBox.className = "feedback error";
+            msgBox.innerHTML = "⏰ MASA TAMAT! Game Over. Sila klik 'Soalan Seterusnya' untuk mula semula.";
+            score = 0; // Reset score on total timeout
+            document.getElementById('game-score').innerText = score;
+        }
 
-function earthTopFor(idx, activeCount) {
-  if (idx < activeCount) {
-    // packed against the beam, in order idx 0..count-1
-    return EARTH_TOP + idx * BEAD_H;
-  }
-  // packed against the bottom of the rod, farthest bead first
-  const rankFromBottom = 3 - idx;
-  return EARTH_BOTTOM - BEAD_H - rankFromBottom * BEAD_H;
-}
+        function setLevel(lvl) {
+            currentLevel = lvl;
+            document.querySelectorAll('.controls button').forEach(b => b.classList.remove('btn-active'));
+            document.getElementById(`btn-${lvl}`).classList.add('btn-active');
+            score = 0; // Reset score when switching level difficulties
+            document.getElementById('game-score').innerText = score;
+            initGame();
+        }
 
-// ---------- Reading / writing rod state ----------
-function getEarthCount(rod){
-  let count = 0;
-  rod.querySelectorAll('.earth').forEach(b => { if (b.dataset.active === 'true') count++; });
-  return count;
-}
-
-function setEarthCount(rod, newCount){
-  newCount = Math.max(0, Math.min(4, newCount));
-  rod.querySelectorAll('.earth').forEach(b => {
-    const idx = parseInt(b.dataset.index);
-    const active = idx < newCount;
-    b.dataset.active = active ? 'true' : 'false';
-    b.style.top = earthTopFor(idx, newCount) + 'px';
-    b.classList.toggle('active', active);
-  });
-}
-
-function setHeaven(rod, active){
-  const h = rod.querySelector('.heaven');
-  h.dataset.active = active ? 'true' : 'false';
-  h.style.top = (active ? HEAVEN_ACTIVE_TOP : HEAVEN_INACTIVE_TOP) + 'px';
-  h.classList.toggle('active', active);
-}
-
-function getRodDigit(rod){
-  const heavenActive = rod.querySelector('.heaven').dataset.active === 'true';
-  return (heavenActive ? 5 : 0) + getEarthCount(rod);
-}
-
-function setRodDigit(rod, digit){
-  setHeaven(rod, digit >= 5);
-  setEarthCount(rod, digit % 5);
-}
-
-function setSorobanNumber(num){
-  for (let r = 0; r < rodCount; r++) {
-    const digit = Math.floor(num / Math.pow(10, r)) % 10;
-    setRodDigit(rodsByPlace[r], digit);
-  }
-}
-
-function getSorobanValue(){
-  let total = 0;
-  for (let r = 0; r < rodCount; r++) {
-    total += getRodDigit(rodsByPlace[r]) * Math.pow(10, r);
-  }
-  return total;
-}
-
-// ---------- Click handlers (real push-bead interaction) ----------
-function onHeavenClick(rod){
-  const active = rod.querySelector('.heaven').dataset.active === 'true';
-  setHeaven(rod, !active);
-  afterMove();
-}
-
-function onEarthClick(rod, idx){
-  const count = getEarthCount(rod);
-  const newCount = (idx < count) ? idx : idx + 1;
-  setEarthCount(rod, newCount);
-  afterMove();
-}
-
-function afterMove(){
-  updateDigits();
-  autoCheckAnswer();
-}
-
-function updateDigits(){
-  document.getElementById('digits').textContent = "Nilai semasa pada abakus: " + getSorobanValue();
-}
-
-let celebrated = false;
-
-function autoCheckAnswer(){
-  const value = getSorobanValue();
-  const fb = document.getElementById('feedback');
-  if (value === targetSum) {
-    fb.textContent = "";
-    if (!celebrated) {
-      celebrated = true;
-      celebrate();
-    }
-  } else {
-    fb.textContent = "";
-  }
-}
-
-function celebrate(){
-  const overlay = document.getElementById('celebrateOverlay');
-
-  // clear any leftover confetti pieces from a previous round
-  overlay.querySelectorAll('.confetti').forEach(el => el.remove());
-
-  const candies = ['🍬','🍭','🍫','🍡','✨','⭐','🎉'];
-  const colors = ['#e8b34a','#4f9ddb','#e8607a','#7bc47f','#c19af6','#ffd166'];
-  const pieceCount = 45;
-
-  for (let i = 0; i < pieceCount; i++) {
-    const piece = document.createElement('div');
-    piece.className = 'confetti';
-    const useEmoji = Math.random() < 0.6;
-    if (useEmoji) {
-      piece.textContent = candies[Math.floor(Math.random() * candies.length)];
-      piece.style.fontSize = (16 + Math.random() * 18) + 'px';
-    } else {
-      piece.style.width = piece.style.height = (8 + Math.random() * 8) + 'px';
-      piece.style.borderRadius = '50%';
-      piece.style.background = colors[Math.floor(Math.random() * colors.length)];
-    }
-    piece.style.left = Math.random() * 100 + '%';
-    piece.style.animationDelay = (Math.random() * 0.6) + 's';
-    piece.style.animationDuration = (1.8 + Math.random() * 1.4) + 's';
-    overlay.appendChild(piece);
-  }
-
-  document.getElementById('celebrateSub').textContent =
-    `${currentA} - ${currentB} = ${targetSum}`;
-
-  overlay.classList.add('show');
-}
-
-function closeCelebrate(){
-  document.getElementById('celebrateOverlay').classList.remove('show');
-  newQuestion();
-}
-
-// ---------- Question generation ----------
-function levelConfig(level){
-  if (level === "1") return { min:1, max:9, rods:2 };
-  if (level === "2") return { min:10, max:99, rods:3 };
-  return { min:100, max:999, rods:4 };
-}
-
-function newQuestion(){
-  const level = document.getElementById('level').value;
-  const cfg = levelConfig(level);
-
-  let a = Math.floor(Math.random() * (cfg.max - cfg.min + 1)) + cfg.min;
-  let b = Math.floor(Math.random() * (cfg.max - cfg.min + 1)) + cfg.min;
-  if (a < b) { const t = a; a = b; b = t; }
-  while (a === b) { b = Math.floor(Math.random() * (cfg.max - cfg.min + 1)) + cfg.min; if (a < b) { const t=a; a=b; b=t; } }
-
-  currentA = a;
-  currentB = b;
-  targetSum = a - b;
-
-  buildSoroban(cfg.rods);
-  celebrated = false;
-
-  document.getElementById('question').textContent = `${a} - ${b} = ?`;
-  document.getElementById('startInfo').textContent =
-    `Gerakkan biji abakus untuk mewakili jawapan bagi ${a} - ${b}.`;
-  document.getElementById('feedback').textContent = "";
-  updateDigits();
-
-  renderHint(a, b, cfg.rods);
-}
-
-// ---------- Technique hints: direct / small friend / big friend ----------
-function decompose(num, n){
-  const arr = [];
-  for (let r = 0; r < n; r++) arr.push(Math.floor(num / Math.pow(10, r)) % 10);
-  return arr;
-}
-
-// Determine how to subtract digit x from current rod digit d using real soroban bead rules.
-function subtractDigitFromRod(d, x){
-  if (x === 0) {
-    return { method:'none', tag:'Tiada', result:d, carry:0,
-      explain:'Tiada apa perlu ditolak pada tempat ini.' };
-  }
-  if (x === 10) {
-    return { method:'carry', tag:'Pinjam 1', result:d, carry:1,
-      explain:'Pinjam 1 terus dari tempat seterusnya; nilai di tempat ini tidak berubah.' };
-  }
-  const sum = d - x;
-  const earthD = d % 5, heavenD = d >= 5 ? 1 : 0;
-  const earthX = x % 5, heavenX = x >= 5 ? 1 : 0;
-
-  if (sum >= 0 && earthD >= earthX && heavenD >= heavenX) {
-    return { method:'direct', tag:'Terus', result:sum, carry:0,
-      explain:`Tolak terus ${x} biji (biji yang mencukupi sudah ada).` };
-  }
-  if (sum >= 0) {
-    const comp = 5 - x;
-    return { method:'small', tag:'Kawan Kecil', result:sum, carry:0,
-      explain:`Guna Kawan Kecil untuk −${x}: turunkan biji syurga (−5), naikkan ${comp} biji bumi (+${comp}).` };
-  }
-  const result = sum + 10;
-  const comp10 = 10 - x;
-  return { method:'big', tag:'Kawan Besar (Pinjam)', result:result, carry:1,
-    explain:`Guna Kawan Besar untuk −${x}: pinjam 1 dari tempat seterusnya (−10 di sana), naikkan ${comp10} pada tempat ini (+${comp10}).` };
-}
-
-function renderHint(a, b, n){
-  const digitsA = decompose(a, n);
-  const digitsB = decompose(b, n);
-  let carry = 0;
-  const stepsHtml = [];
-
-  for (let r = 0; r < n; r++) {
-    const d = digitsA[r];
-    const x = digitsB[r] + carry;
-    const step = subtractDigitFromRod(d, x);
-    const cls = step.method === 'direct' ? 'direct'
-              : step.method === 'small' ? 'small'
-              : step.method === 'big' ? 'big'
-              : step.method === 'carry' ? 'carry' : 'none';
-
-    stepsHtml.push(
-      `<div class="step"><span class="tag ${cls}">${step.tag}</span>` +
-      `<b>${LABELS[r]}:</b> ${d} − ${digitsB[r]}${carry ? ' (+ pinjam 1)' : ''} → ${step.explain}</div>`
-    );
-    carry = step.carry;
-  }
-
-  document.getElementById('hintSteps').innerHTML = stepsHtml.join('');
-}
-
-function toggleHint(){
-  document.getElementById('hintPanel').classList.toggle('show');
-}
-
-// ---------- Init ----------
-newQuestion();
-</script>
-</body>
-</html>
+        function initGame() {
+            isGameOver = false;
+            document.getElementById('btn-submit').disabled = false;
+            
+            // Random challenge generation based on level digits
+            const min = currentLevel === 1 ? 1 : Math.pow(10, currentLevel - 1);
+            const max = Math.pow(10, currentLevel) - 1;
+            targetNumber = Math.floor(Math.random() * (max - min + 1)) + min;
+            
+            document.getElementById('target-value').innerText = targetNumber;
+            document.getElementById('feedback-message').innerText = '';
+            setupAbacusUI();
+            updateCalculatedValue();
+            startTimer();
+            }
+            function setupAbacusUI() {
+            const container = document.getElementById('abacus-container');
+            const oldRods = container.querySelectorAll('.rod');
+            oldRods.forEach(r => r.remove());
+            abacusState = [];
+            for (let i = 0; i < currentLevel; i++) {
+            abacusState.push({ upper: 0, lower: [0, 0, 0, 0] });
+            const rodDiv = document.createElement('div');
+            rodDiv.className = 'rod';
+            const upperBead = document.createElement('div');
+            upperBead.className = 'bead upper';
+            upperBead.style.top = '10px';
+            upperBead.onclick = () => { if(!isGameOver) toggleUpperBead(i, upperBead); };
+            rodDiv.appendChild(upperBead);
+            for (let j = 0; j < 4; j++) {
+            const lowerBead = document.createElement('div');
+            lowerBead.className = 'bead';
+            lowerBead.style.top = ${140 + (j * 25)}px;
+            lowerBead.onclick = () => { if(!isGameOver) clickLowerBead(i, j, rodDiv); };
+            rodDiv.appendChild(lowerBead);
+            }
+            container.appendChild(rodDiv);
+            }
+            }
+            function toggleUpperBead(rodIdx, element) {
+            playSound('click');
+            if (abacusState[rodIdx].upper === 0) {
+            abacusState[rodIdx].upper = 1;
+            element.style.top = '45px';
+            } else {
+            abacusState[rodIdx].upper = 0;
+            element.style.top = '10px';
+            }
+            updateCalculatedValue();
+            }
+            function clickLowerBead(rodIdx, beadIdx, rodElement) {
+            playSound('click');
+            const currentState = abacusState[rodIdx].lower[beadIdx];
+            const lowerBeadsElements = rodElement.querySelectorAll('.bead:not(.upper)');
+            if (currentState === 0) {
+            for (let j = 0; j <= beadIdx; j++) abacusState[rodIdx].lower[j] = 1;
+            } else {
+            for (let j = beadIdx; j < 4; j++) abacusState[rodIdx].lower[j] = 0;
+            }
+            let activeCount = abacusState[rodIdx].lower.filter(x => x === 1).length;
+            for (let j = 0; j < 4; j++) {
+            if (abacusState[rodIdx].lower[j] === 1) {
+            lowerBeadsElements[j].style.top = ${90 - ((activeCount - 1 - j) * 26)}px;
+            } else {
+            lowerBeadsElements[j].style.top = ${140 + (j * 25)}px;
+            }
+            }
+            updateCalculatedValue();
+            }
+            function updateCalculatedValue() {
+            let total = 0;
+            for (let i = 0; i < currentLevel; i++) {
+            let rodValue = 0;
+            if (abacusState[i].upper === 1) rodValue += 5;
+            rodValue += abacusState[i].lower.filter(x => x === 1).length;
+            let power = currentLevel - 1 - i;
+            total += rodValue * Math.pow(10, power);
+            }
+            document.getElementById('current-value').innerText = total;
+            return total;
+            }
+            function checkAnswer() {
+            if(isGameOver) return;
+            const currentVal = updateCalculatedValue();
+            const msgBox = document.getElementById('feedback-message');
+            if (currentVal === targetNumber) {
+            clearInterval(timerInterval); // Stop timer immediately on win
+            playSound('success');
+            msgBox.className = "feedback success";
+            msgBox.innerHTML = "✅ Betul! 🎉 Syabas!";
+            // Reward scaling points depending on current active level
+            score += (currentLevel * 10);
+            document.getElementById('game-score').innerText = score;
+            isGameOver = true; // Prevents spamming check button to abuse score
+            } else {
+            playSound('error');
+            msgBox.className = "feedback error";
+            msgBox.innerHTML = "❌ Salah, cuba lagi! Periksa kedudukan manik.";
+            }
+            }
+            function nextQuestion() {
+            initGame();
+            }
+            window.onload = initGame;
+    </script>
