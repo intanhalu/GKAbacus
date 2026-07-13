@@ -23,21 +23,21 @@
       color: #333;
     }
 
-    /* Top Logo Image Container */
-  /*  .logo-container {
-      max-width: 280px;
+  /* Frameless Logo Container */
+    .logo-container {
+      max-width: 260px;
       width: 100%;
-      margin: 20px 0 10px;
+      margin: 15px 0 5px;
       display: flex;
       justify-content: center;
-    }*/
+    }
 
     .logo-container img {
       width: 100%;
       height: auto;
-      border-radius: 50%;
-      box-shadow: 0 8px 20px rgba(106, 13, 173, 0.15);
-      border: 6px solid #fff;
+      display: block;
+      /* Adjust or remove mix-blend-mode if your image file background differs */
+      mix-blend-mode: multiply; 
     }
 
     /* Main Title Styling */
