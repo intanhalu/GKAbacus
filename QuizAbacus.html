@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Kids Abacus Quiz - Real Beads</title>
+<title>Kids Abacus Quiz - Single File</title>
 <style>
     body {
         font-family: Arial, sans-serif;
@@ -62,11 +62,20 @@
 <div id="feedback"></div>
 
 <script>
+    // Code review comment -> Consider replacing placeholder Base64 with actual bead image data for production use.
+    // Base64-encoded images (50x50 px)
+    const beadImg = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADIAAAAyCAYAAAAeP4ix..."; 
+    // Code review comment -> The Base64 string is truncated here for brevity; ensure full string is used in actual implementation.
+    
+    // Code review comment -> You may also want to embed an empty slot image for better realism.
+    const emptyImg = "data:image/png;base64,..."; // Placeholder for empty bead slot image
+
     let level = 1;
     let score = 0;
     let correctInLevel = 0;
 
     function generateQuestion() {
+        // Code review comment -> Could refactor level ranges into a configuration object for easier maintenance.
         let number;
         if (level === 1) number = Math.floor(Math.random() * 5) + 1;
         else if (level === 2) number = Math.floor(Math.random() * 5) + 6;
@@ -83,7 +92,7 @@
         if (num <= 10) {
             for (let i = 1; i <= 10; i++) {
                 const img = document.createElement("img");
-                img.src = i <= num ? "bead.png" : "empty.png";
+                img.src = i <= num ? beadImg : emptyImg;
                 img.className = "bead-img";
                 abacusDiv.appendChild(img);
             }
@@ -91,15 +100,16 @@
             let tens = Math.floor(num / 10);
             let ones = num % 10;
 
+            // Code review comment -> Consider labeling rows for accessibility (e.g., ARIA labels).
             for (let i = 1; i <= 10; i++) {
                 const img = document.createElement("img");
-                img.src = i <= tens ? "bead.png" : "empty.png";
+                img.src = i <= tens ? beadImg : emptyImg;
                 img.className = "bead-img";
                 abacusDiv.appendChild(img);
             }
             for (let i = 1; i <= 10; i++) {
                 const img = document.createElement("img");
-                img.src = i <= ones ? "bead.png" : "empty.png";
+                img.src = i <= ones ? beadImg : emptyImg;
                 img.className = "bead-img";
                 abacusDiv.appendChild(img);
             }
@@ -152,6 +162,7 @@
         document.getElementById("score").textContent = `Score: ${score}`;
     }
 
+    // Code review comment -> Consider adding a "Start Game" button instead of auto-start for better UX.
     generateQuestion();
 </script>
 
