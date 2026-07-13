@@ -1,168 +1,132 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title> Asas Abacus </title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; background: #f4f0e6; }
-    .soroban {
-      display: flex; justify-content: center; margin: 20px;
-      background: #8b5a2b; padding: 20px; border-radius: 10px;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ASAS Soroban Abacus</title>
+<style>
+    body {
+        font-family: 'Comic Sans MS', cursive, sans-serif;
+        background-color: #fef6e4;
+        text-align: center;
+        margin: 0;
+        padding: 0;
+    }
+    h1 {
+        color: #ff6b6b;
+        margin-top: 20px;
+    }
+    #total {
+        font-size: 2em;
+        margin-top: 10px;
+        color: #333;
+    }
+    .abacus {
+        display: flex;
+        justify-content: center;
+        margin-top: 30px;
     }
     .rod {
-      position: relative;
-      width: 60px; height: 260px;
-      margin: 10px; background: #d2b48c; border-radius: 5px;
+        background-color: #333;
+        width: 10px;
+        height: 300px;
+        margin: 0 20px;
+        position: relative;
     }
-    .divider {
-      position: absolute;
-      top: 100px;
-      width: 100%; height: 6px; background: #000;
+    .beam {
+        position: absolute;
+        top: 120px;
+        left: -20px;
+        width: 50px;
+        height: 10px;
+        background-color: #8b5e3c;
+        z-index: 1;
     }
     .bead {
-  position: absolute;
-  left: 50%;              /* center horizontally */
-  transform: translateX(-50%);
-  width: 40px; height: 22px;
-  border-radius: 11px;
-  background: #c19a6b;
-  cursor: grab;
-  box-shadow: inset -2px -2px 4px rgba(0,0,0,0.3);
-  transition: top 0.15s;
-}
-    .label {
-      position: absolute; bottom: -25px; width: 100%; text-align: center;
-      font-weight: normal; color: #ffff; 
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        position: absolute;
+        left: -15px;
+        cursor: pointer;
+        transition: top 0.3s;
     }
-    #output, #breakdown, #digits { margin-top: 15px; }
-  </style>
+    .color1 { background-color: #ff6b6b; }
+    .color2 { background-color: #ffd93d; }
+</style>
 </head>
 <body>
-  <h1>Asas Abacus</h1>
-  <div class="soroban" id="soroban"></div>
-  <div id="output"></div>
-  <div id="breakdown"></div>
-  <div id="digits"></div>
 
-  <script>
-    const soroban = document.getElementById('soroban');
-    const output = document.getElementById('output');
-    const breakdown = document.getElementById('breakdown');
-    const digitsDisplay = document.getElementById('digits');
-    const rods = 5;
-    const labels = ["Sepuluh Ribu","Seribu","Seratus","Sepuluh","Satu"];
+<h1>ASAS Soroban Abacus</h1>
+<p>Click beads to move them and see the total!</p>
+<div id="total">Total: 0</div>
 
-    buildSoroban();
+<div class="abacus" id="abacus"></div>
 
-    function buildSoroban() {
-      soroban.innerHTML = "";
-      for (let r = rods-1; r>=0; r--) {
-        let rod = document.createElement('div');
-        rod.className = 'rod';
-        rod.dataset.place = r;
+<script>
+    const abacus = document.getElementById('abacus');
+    const totalDisplay = document.getElementById('total');
+    const rods = 5; // number of rods (digits)
+    const beadSpacing = 50;
 
-        let divider = document.createElement('div');
-        divider.className = 'divider';
-        rod.appendChild(divider);
+    // Store bead states
+    let sorobanState = Array.from({ length: rods }, () => ({ upper: 0, lower: 0 }));
 
-        // Heaven bead
-        let heaven = createBead(20, 5*Math.pow(10,r), "heaven");
-        rod.appendChild(heaven);
-
-        // Earth beads
-        let earthPositions = [140,170,200,230];
-        earthPositions.forEach((pos, idx)=>{
-          let earth = createBead(pos, 1*Math.pow(10,r), "earth");
-          earth.dataset.index = idx;
-          rod.appendChild(earth);
-        });
-
-        let label = document.createElement('div');
-        label.className = 'label';
-        label.textContent = labels[rods-1-r];
-        rod.appendChild(label);
-
-        soroban.appendChild(rod);
-      }
+    function updateTotal() {
+        let total = 0;
+        for (let i = 0; i < rods; i++) {
+            let value = sorobanState[i].upper * 5 + sorobanState[i].lower;
+            total += value * Math.pow(10, rods - i - 1);
+        }
+        totalDisplay.textContent = `Total: ${total}`;
     }
 
-    function createBead(initialTop,value,type){
-      let bead=document.createElement('div');
-      bead.className='bead '+type;
-      bead.style.top=initialTop+"px";
-      bead.dataset.value=value;
-      bead.dataset.initialTop=initialTop;
-      bead.dataset.active="false";
-      bead.addEventListener('mousedown',startDrag);
-      return bead;
-    }
+    for (let r = 0; r < rods; r++) {
+        const rod = document.createElement('div');
+        rod.classList.add('rod');
 
-    function startDrag(e){
-      const bead=e.target;
-      const rod=bead.parentElement;
-      const rodRect=rod.getBoundingClientRect();
+        // Beam
+        const beam = document.createElement('div');
+        beam.classList.add('beam');
+        rod.appendChild(beam);
 
-      function onMouseMove(ev){
-        let y=ev.clientY-rodRect.top;
-        bead.style.top=y+"px";
-      }
-
-      function onMouseUp(){
-        let nearest;
-        if (bead.classList.contains("heaven")) {
-          nearest = (parseInt(bead.style.top) > 50) ? 80 : parseInt(bead.dataset.initialTop);
-        } else {
-          let siblings = Array.from(bead.parentElement.querySelectorAll('.earth'));
-          let idx = parseInt(bead.dataset.index);
-
-          if (idx === 0) {
-            // First earth bead snaps to divider or back down
-            nearest = (parseInt(bead.style.top) < 125) ? 110 : parseInt(bead.dataset.initialTop);
-          } else {
-            // For other beads: move into the slot of the bead below if it's active
-            if (siblings[idx-1].dataset.active === "true") {
-              nearest = parseInt(siblings[idx-1].dataset.initialTop); // replace slot of bead below
+        // Upper bead (worth 5)
+        const upperBead = document.createElement('div');
+        upperBead.classList.add('bead', 'color1');
+        upperBead.style.top = '20px';
+        upperBead.addEventListener('click', () => {
+            if (sorobanState[r].upper === 0) {
+                upperBead.style.top = '90px'; // move down to beam
+                sorobanState[r].upper = 1;
             } else {
-              nearest = parseInt(bead.dataset.initialTop); // stay down
+                upperBead.style.top = '20px'; // move up
+                sorobanState[r].upper = 0;
             }
-          }
-        }
-
-        bead.style.top = nearest + "px";
-        bead.dataset.active = (nearest !== parseInt(bead.dataset.initialTop)) ? "true" : "false";
-
-        document.removeEventListener('mousemove',onMouseMove);
-        document.removeEventListener('mouseup',onMouseUp);
-        updateOutput();
-      }
-
-      document.addEventListener('mousemove',onMouseMove);
-      document.addEventListener('mouseup',onMouseUp);
-    }
-
-    function updateOutput(){
-      let total=0;
-      let breakdownText="<strong>Breakdown:</strong><br>";
-      let digitArray=new Array(rods).fill(0);
-
-      document.querySelectorAll('.rod').forEach((rod,index)=>{
-        let rodValue=0;
-        rod.querySelectorAll('.bead').forEach(b=>{
-          if(b.dataset.active==="true"){
-            rodValue+=parseInt(b.dataset.value);
-          }
+            updateTotal();
         });
-        total+=rodValue;
-        if(rodValue>0){
-          breakdownText+=`${labels[index]}: ${rodValue}<br>`;
-        }
-        digitArray[index]=rodValue/Math.pow(10,rods-1-index);
-      });
+        rod.appendChild(upperBead);
 
-      breakdown.innerHTML=breakdownText+"<br><strong>Total: "+total+"</strong>";
-      output.textContent="Current total = "+total;
-      digitsDisplay.textContent="Digits: "+digitArray.join('');
+        // Lower beads (worth 1 each)
+        for (let b = 0; b < 4; b++) {
+            const lowerBead = document.createElement('div');
+            lowerBead.classList.add('bead', 'color2');
+            lowerBead.style.top = `${150 + b * beadSpacing}px`;
+            lowerBead.addEventListener('click', () => {
+                if (parseInt(lowerBead.style.top) > 150) {
+                    lowerBead.style.top = `${110 + b * beadSpacing}px`; // move up to beam
+                    sorobanState[r].lower++;
+                } else {
+                    lowerBead.style.top = `${150 + b * beadSpacing}px`; // move down
+                    sorobanState[r].lower--;
+                }
+                updateTotal();
+            });
+            rod.appendChild(lowerBead);
+        }
+
+        abacus.appendChild(rod);
     }
-  </script>
+</script>
+
 </body>
 </html>
