@@ -2,108 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Abacus Learning Hub</title>
   <style>
-    body {
-      font-family: 'Segoe UI', Arial, sans-serif;
-      background: #f8f6fb;
+    /* Global Reset & Playful Typography */
+    * {
+      box-sizing: border-box;
       margin: 0;
-      padding: 40px;
-      text-align: center;
+      padding: 0;
     }
-    h1 {
-      color: #4b0082;
-      margin-bottom: 40px;
-      font-size: 36px;
+    
+    body {
+      font-family: 'Comic Sans MS', 'Chalkboard SE', 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #fef9e7 0%, #f4ecf7 100%);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      color: #333;
     }
-    .menu {
+
+    /* Top Logo Image Container */
+    .logo-container {
+      max-width: 280px;
+      width: 100%;
+      margin: 20px 0 10px;
       display: flex;
       justify-content: center;
-      flex-wrap: wrap;
-      gap: 30px;
     }
+
+    .logo-container img {
+      width: 100%;
+      height: auto;
+      border-radius: 50%;
+      box-shadow: 0 8px 20px rgba(106, 13, 173, 0.15);
+      border: 6px solid #fff;
+    }
+
+    /* Main Title Styling */
+    h1 {
+      color: #4b0082;
+      font-size: 2.2rem;
+      margin-bottom: 30px;
+      text-shadow: 2px 2px 0px #fff, 4px 4px 0px rgba(106, 13, 173, 0.1);
+    }
+
+    /* Responsive Grid Layout */
+    .menu {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+    }
+
+    /* Playful Card Design */
     .card {
       background: #6a0dad;
       color: #fff;
-      width: 250px;
-      padding: 25px;
-      border-radius: 12px;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.2);
-      transition: transform 0.3s, box-shadow 0.3s;
+      padding: 30px 20px;
+      border-radius: 24px;
+      box-shadow: 0 8px 0px #4b0082, 0 15px 20px rgba(0,0,0,0.15);
+      transition: transform 0.2s, box-shadow 0.2s;
       cursor: pointer;
-    }
-    .card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 10px 18px rgba(0,0,0,0.3);
-    }
-    .card h2 {
-      margin: 0 0 15px;
-      font-size: 22px;
-      color: #fff;
-    }
-    .emoji {
-      font-size: 32px;
-      margin-bottom: 10px;
-      display: block;
-    }
-    .sub-links {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      align-items: center;
+      position: relative;
     }
-    .sub-links a {
-      background: #d8b4f8;
-      color: #4b0082;
-      padding: 10px;
-      border-radius: 8px;
-      text-decoration: none;
+
+    .card:active {
+      transform: translateY(4px);
+      box-shadow: 0 4px 0px #4b0082, 0 8px 10px rgba(0,0,0,0.15);
+    }
+
+    .card h2 {
+      margin: 10px 0 20px;
+      font-size: 1.6rem;
       font-weight: bold;
-      transition: background 0.3s;
+      letter-spacing: 0.5px;
     }
-    .sub-links a:hover {
-      background: #b57edc;
-      color: #fff;
+
+    /* Oversized Floating Emojis */
+    .emoji {
+      font-size: 50px;
+      filter: drop-shadow(0 4px 4px rgba(0,0,0,0.2));
+      animation: bounce 3s ease-in-out infinite alternate;
     }
+
+    /* Bouncy Idle Animations for Cards */
+    .card:nth-child(2) .emoji { animation-delay: 0.5s; }
+    .card:nth-child(3) .emoji { animation-delay: 1s; }
+
+    @keyframes bounce {
+      0% { transform: translateY(0); }
+      100% { transform: translateY(-8px); }
+    }
+
+    /* Fun Rounded Buttons */
     .single-link {
       display: inline-block;
-      margin-top: 10px;
-      background: #d8b4f8;
-      color: #4b0082;
+      width: 100%;
+      max-width: 200px;
+      background: #fff;
+      color: #6a0dad;
       padding: 12px 20px;
-      border-radius: 8px;
+      border-radius: 50px;
       text-decoration: none;
       font-weight: bold;
-      transition: background 0.3s;
+      font-size: 1.1rem;
+      box-shadow: 0 4px 0px #d8b4f8;
+      transition: background 0.2s, transform 0.1s;
+      text-align: center;
     }
-    .single-link:hover {
-      background: #b57edc;
-      color: #fff;
+
+    .card:hover .single-link {
+      background: #fdf2ff;
+    }
+
+    /* Desktop Optimization Grid Overrides */
+    @media (min-width: 768px) {
+      .menu {
+        grid-template-columns: repeat(3, 1fr);
+        max-width: 1000px;
+      }
+      
+      .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 0px #4b0082, 0 20px 25px rgba(0,0,0,0.15);
+      }
+      
+      .card:active {
+        transform: translateY(4px);
+        box-shadow: 0 4px 0px #4b0082, 0 8px 10px rgba(0,0,0,0.15);
+      }
+      
+      h1 {
+        font-size: 3rem;
+      }
     }
   </style>
 </head>
 <body>
+
+  <!-- Top Logo Section -->
+  <div class="logo-container">
+    <img src="your-image-filename.jpg" alt="Asas Abacus Logo">
+  </div>
+
   <h1>Abacus Learning Hub</h1>
+
   <div class="menu">
     <!-- Soroban Abacus -->
-    <div class="card" onclick="location.href='asasabacus.html'">
+    <div class="card" onclick="location.href='asasabacus3.html'">
       <span class="emoji">🧮</span>
       <h2>Asas Abacus</h2>
-      <a class="single-link" href="asasabacus3.html">Asas Abacus</a>
+      <a class="single-link" href="asasabacus3.html">Mula Belajar</a>
     </div>
 
     <!-- Addition -->
-    <div class="card" onclick="location.href='addition1.html'">
+    <div class="card" onclick="location.href='addition.html'">
       <span class="emoji">➕</span>
       <h2>Addition</h2>
-      <a class="single-link" href="addition.html">Tambah Abacus</a>
+      <a class="single-link" href="addition.html">Tambah</a>
     </div>
 
     <!-- Subtraction -->
     <div class="card" onclick="location.href='substraction.html'">
       <span class="emoji">➖</span>
       <h2>Subtraction</h2>
-      <a class="single-link" href="substraction.html">Tolak Abacus</a>
+      <a class="single-link" href="substraction.html">Tolak</a>
     </div>
   </div>
+
 </body>
 </html>
